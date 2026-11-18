@@ -3,9 +3,9 @@
  * APP CONTROLLER — Portafolio de Edwar Granados (@SirEdward97)
  * Coordina:
  * 1. El fondo 3D completo (`TempleScene3D`): Japanese Temple (`scene.gltf`)
- *    + los 10 logos 3D `.glb` (`./dev/*.glb`) orbitando en el fondo
+ *    + los 10 logos 3D `.glb` (`./dev/*.glb`) adaptados para Móvil y Escritorio
  * 2. La atmósfera de pliegues verticales (`AtmosphereBackground` — `sk.md` + `hi.md`)
- * 3. El Header Grid con `./logo/edward.png`, modo "ORBITAR FONDO 3D" y filtros
+ * 3. Modo "VISTA MÓVIL" (394px Portrait Simulator) + Modo "ORBITAR 3D" táctil
  * ==========================================================================
  */
 
@@ -13,7 +13,6 @@ import { AtmosphereBackground } from './atmosphere.js';
 import { TempleScene3D } from './scene3d.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Inicializar atmósfera (sk.md + hi.md) y escena 3D completa de fondo (Japanese Temple + 10 logos .glb)
   const atmosphere = new AtmosphereBackground('atmosphere-canvas');
   const templeScene = new TempleScene3D('temple-canvas');
 
@@ -21,18 +20,48 @@ document.addEventListener('DOMContentLoaded', () => {
     templeScene.syncAccentColor(theme.rimHex);
   });
 
-  // 2. Botón en Header para despejar la interfaz y orbitar libremente el fondo 3D
+  // 1. Conmutador de Vista Móvil (394px Portrait) / Vista Escritorio
+  const btnMobilePreview = document.getElementById('btn-mobile-preview');
+  const labelMobilePreview = document.getElementById('label-mobile-preview');
+
+  if (btnMobilePreview) {
+    btnMobilePreview.addEventListener('click', () => {
+      const isMobilePreview = document.body.classList.toggle('mobile-preview-active');
+      btnMobilePreview.classList.toggle('active', isMobilePreview);
+      if (labelMobilePreview) {
+        labelMobilePreview.textContent = isMobilePreview ? 'VISTA ESCRITORIO' : 'VISTA MÓVIL';
+      }
+      requestAnimationFrame(() => {
+        atmosphere.handleViewportChange();
+        templeScene.handleViewportChange();
+      });
+    });
+  }
+
+  // 2. Botón para despejar la interfaz y orbitar libremente el fondo 3D (con soporte táctil)
   const btnInspect3D = document.getElementById('btn-inspect-3d');
   const labelInspect3D = document.getElementById('label-inspect-3d');
+  const btnExitOrbitDock = document.getElementById('btn-exit-orbit-dock');
+
+  function setOrbitMode(active) {
+    document.body.classList.toggle('inspect-3d-background', active);
+    templeScene.setInteractiveOrbit(active);
+    if (btnInspect3D) btnInspect3D.classList.toggle('active', active);
+    if (labelInspect3D) {
+      labelInspect3D.textContent = active ? 'VOLVER A LECTURA' : 'ORBITAR 3D';
+    }
+  }
 
   if (btnInspect3D) {
     btnInspect3D.addEventListener('click', () => {
-      const active = document.body.classList.toggle('inspect-3d-background');
-      templeScene.setInteractiveOrbit(active);
-      btnInspect3D.classList.toggle('active', active);
-      if (labelInspect3D) {
-        labelInspect3D.textContent = active ? 'VOLVER AL PORTAFOLIO' : 'ORBITAR FONDO 3D';
-      }
+      const next = !document.body.classList.contains('inspect-3d-background');
+      setOrbitMode(next);
+    });
+  }
+
+  if (btnExitOrbitDock) {
+    btnExitOrbitDock.addEventListener('click', () => {
+      setOrbitMode(false);
     });
   }
 
@@ -57,6 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
     row.addEventListener('mouseleave', () => {
       templeScene.setHighlightDomain(pinnedBgDomain);
     });
+    // Soporte táctil en móviles: tocar una fila resalta sus logos 3D en el fondo
+    row.addEventListener(
+      'touchstart',
+      () => {
+        templeScene.setHighlightDomain(row.dataset.domain);
+      },
+      { passive: true }
+    );
   });
 
   // 4. Panel de ajuste de atmósfera (sk.md + hi.md)
@@ -116,22 +153,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 5. Controles de la estructura 3D (Cámara, Superficie, Iluminación)
+  // 5. Controles de la estructura 3D (sincronizados entre Hero y Dock flotante móvil)
   const modeButtons = document.querySelectorAll('[data-render-mode]');
   modeButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      modeButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      templeScene.setRenderMode(btn.dataset.renderMode);
+      const targetMode = btn.dataset.renderMode;
+      modeButtons.forEach((b) => {
+        b.classList.toggle('active', b.dataset.renderMode === targetMode);
+      });
+      templeScene.setRenderMode(targetMode);
     });
   });
 
   const presetButtons = document.querySelectorAll('[data-camera-preset]');
   presetButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      presetButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      templeScene.setCameraPreset(btn.dataset.cameraPreset);
+      const targetPreset = btn.dataset.cameraPreset;
+      presetButtons.forEach((b) => {
+        b.classList.toggle('active', b.dataset.cameraPreset === targetPreset);
+      });
+      templeScene.setCameraPreset(targetPreset);
     });
   });
 

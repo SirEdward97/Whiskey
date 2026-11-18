@@ -1,10 +1,11 @@
 /**
  * ==========================================================================
  * UNIFIED FULL-PAGE 3D BACKGROUND ENGINE — `scene3d.js`
- * Renderiza en el fondo completo de la página:
- * 1. La estructura principal: Japanese Temple (`./scene.gltf` + `scene.bin` + PBR textures)
- * 2. La constelación de 10 logos 3D de conocimientos (`./dev/*.glb`) orbitando en profundidad
- * Iluminación calibrada según `hi.md` ("Brutalist type foundry at dusk" — Ember Orange #ff6436)
+ * Adaptado para Escritorio y Dispositivos Móviles (Portrait & Landscape):
+ * 1. Estructura principal: Japanese Temple (`./scene.gltf` + `scene.bin` + PBR)
+ * 2. Constelación de 10 logos 3D (`./dev/*.glb`) con distribución adaptativa
+ *    para pantallas verticales móviles y monitores de escritorio.
+ * 3. Soporte táctil (Touch Parallax + Touch Orbit / Pinch-to-Zoom).
  * ==========================================================================
  */
 
@@ -26,6 +27,7 @@ export class TempleScene3D {
     this.autoRotate = true;
     this.nightLighting = false;
     this.interactiveOrbit = false;
+    this.currentPreset = 'hero';
 
     this.scrollY = window.scrollY || 0;
     this.mouseX = 0;
@@ -54,14 +56,41 @@ export class TempleScene3D {
     this._animate();
   }
 
+  _getViewportDimensions() {
+    const parent = this.canvas.parentElement;
+    if (document.body.classList.contains('mobile-preview-active') && parent) {
+      return {
+        width: this.canvas.clientWidth || 390,
+        height: this.canvas.clientHeight || 844
+      };
+    }
+    return {
+      width: window.innerWidth,
+      height: window.innerHeight
+    };
+  }
+
+  _isMobileViewport() {
+    return this.width < 768 || (this.width / Math.max(1, this.height)) < 0.85;
+  }
+
   _initScene() {
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+    const dims = this._getViewportDimensions();
+    this.width = dims.width;
+    this.height = dims.height;
 
     this.scene = new THREE.Scene();
 
-    this.camera = new THREE.PerspectiveCamera(40, this.width / this.height, 0.1, 100);
-    this.camera.position.set(4.1, 1.35, 5.1);
+    const isMobile = this._isMobileViewport();
+    this.camera = new THREE.PerspectiveCamera(
+      isMobile ? 46 : 40,
+      this.width / this.height,
+      0.1,
+      100
+    );
+
+    const initialPose = this._getPresetVectors('hero');
+    this.camera.position.copy(initialPose.pos);
 
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
@@ -70,10 +99,10 @@ export class TempleScene3D {
       powerPreference: 'high-performance'
     });
     this.renderer.setSize(this.width, this.height, false);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.65 : 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.22;
+    this.renderer.toneMappingExposure = 1.24;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -81,23 +110,22 @@ export class TempleScene3D {
     this.pivotGroup = new THREE.Group();
     this.scene.add(this.pivotGroup);
 
-    // Grupo para la constelación de 10 logos 3D (.glb) en el fondo alrededor del templo
+    // Grupo para la constelación de 10 logos 3D (.glb)
     this.logosGroup = new THREE.Group();
     this.scene.add(this.logosGroup);
   }
 
   _initLights() {
-    // 1. Luz hemisférica de crepúsculo (dusk — hi.md)
-    this.hemiLight = new THREE.HemisphereLight(0xf1f1f1, 0x161616, 1.35);
+    this.hemiLight = new THREE.HemisphereLight(0xf1f1f1, 0x161616, 1.4);
     this.hemiLight.position.set(0, 12, 0);
     this.scene.add(this.hemiLight);
 
-    // 2. Luz principal direccional cálida para resaltar madera bermellón, oro y biseles 3D
-    this.keyLight = new THREE.DirectionalLight(0xfff4e8, 2.8);
+    this.keyLight = new THREE.DirectionalLight(0xfff4e8, 2.85);
     this.keyLight.position.set(6.0, 8.0, 5.5);
     this.keyLight.castShadow = true;
-    this.keyLight.shadow.mapSize.width = 2048;
-    this.keyLight.shadow.mapSize.height = 2048;
+    const shadowRes = this._isMobileViewport() ? 1024 : 2048;
+    this.keyLight.shadow.mapSize.width = shadowRes;
+    this.keyLight.shadow.mapSize.height = shadowRes;
     this.keyLight.shadow.camera.near = 0.5;
     this.keyLight.shadow.camera.far = 24;
     const d = 4.0;
@@ -108,13 +136,13 @@ export class TempleScene3D {
     this.keyLight.shadow.bias = -0.0005;
     this.scene.add(this.keyLight);
 
-    // 3. Luz de contra (Rim Light) en Ember Orange (#ff6436 — token principal de hi.md)
-    this.rimLight = new THREE.DirectionalLight(0xff6436, 2.5);
+    // Luz de contra en Ember Orange (#ff6436 — hi.md)
+    this.rimLight = new THREE.DirectionalLight(0xff6436, 2.55);
     this.rimLight.position.set(-5.5, 3.5, -4.5);
     this.scene.add(this.rimLight);
 
-    // 4. Luz interior del pórtico
-    this.lanternLight = new THREE.PointLight(0xff7b47, 2.1, 8.0);
+    // Luz interior del pórtico
+    this.lanternLight = new THREE.PointLight(0xff7b47, 2.15, 8.0);
     this.lanternLight.position.set(0, -0.05, 1.35);
     this.scene.add(this.lanternLight);
   }
@@ -139,7 +167,7 @@ export class TempleScene3D {
       color: 0xff6436,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.65
+      opacity: 0.68
     });
     const ringMesh = new THREE.Mesh(ringGeo, this.ringMat);
     ringMesh.position.y = 0.035;
@@ -155,13 +183,14 @@ export class TempleScene3D {
     this.controls.dampingFactor = 0.05;
     this.controls.rotateSpeed = 0.75;
     this.controls.zoomSpeed = 0.9;
-    this.controls.minDistance = 2.1;
-    this.controls.maxDistance = 10.5;
-    this.controls.maxPolarAngle = Math.PI * 0.53;
-    this.controls.target.set(0, 0.15, 0);
+    this.controls.minDistance = 2.0;
+    this.controls.maxDistance = 12.5;
+    this.controls.maxPolarAngle = Math.PI * 0.54;
+    const initialPose = this._getPresetVectors('hero');
+    this.controls.target.copy(initialPose.target);
     this.controls.autoRotate = this.autoRotate;
     this.controls.autoRotateSpeed = 0.7;
-    this.controls.enabled = false; // Se activa al pulsar "ORBITAR 3D EN VIVO" para no bloquear el scroll de página
+    this.controls.enabled = false;
   }
 
   setInteractiveOrbit(enabled) {
@@ -170,6 +199,7 @@ export class TempleScene3D {
       this.controls.enabled = enabled;
     }
     this.canvas.style.pointerEvents = enabled ? 'auto' : 'none';
+    this.canvas.style.touchAction = enabled ? 'none' : 'auto';
     return this.interactiveOrbit;
   }
 
@@ -254,7 +284,7 @@ export class TempleScene3D {
         if (xhr.lengthComputable) {
           const pct = Math.min(99, Math.round((xhr.loaded / xhr.total) * 100));
           if (progressBar) progressBar.style.width = `${pct}%`;
-          if (loaderText) loaderText.textContent = `CARGANDO SCENE.GLTF (${pct}%)`;
+          if (loaderText) loaderText.textContent = `CARGANDO 3D (${pct}%)`;
         }
       },
       (error) => {
@@ -266,22 +296,24 @@ export class TempleScene3D {
   _loadDevLogos() {
     const loader = new GLTFLoader();
 
-    // Posicionamos los 10 logos .glb de ./dev/ en una órbita arquitectónica alrededor de la estructura japonesa
+    // Coordenadas duales: Desktop (panorámico) vs Mobile (vertical portrait alrededor del templo)
     const orbitalPositions = [
-      { x: -3.4, y: 1.55, z: -0.5, size: 0.72 }, // Three.js
-      { x: 3.4, y: 1.65, z: -0.7, size: 0.68 },  // HTML5
-      { x: -3.9, y: 0.35, z: 0.3, size: 0.66 },  // JavaScript
-      { x: 3.8, y: 0.45, z: 0.2, size: 0.74 },   // Python
-      { x: -3.2, y: -0.85, z: -0.4, size: 0.68 },// Tailwind CSS
-      { x: 3.3, y: -0.75, z: -0.3, size: 0.70 }, // Node.js
-      { x: -2.6, y: 2.15, z: -1.4, size: 0.65 }, // CSS3
-      { x: 2.6, y: 2.2, z: -1.3, size: 0.72 },   // MongoDB
-      { x: -2.7, y: -1.55, z: 0.6, size: 0.72 }, // Docker
-      { x: 2.8, y: -1.5, z: 0.5, size: 0.70 }    // Kubernetes
+      { dx: -3.4, dy: 1.55, dz: -0.5, mx: -1.45, my: 1.95, mz: -0.4, size: 0.72 }, // Three.js
+      { dx: 3.4,  dy: 1.65, dz: -0.7, mx: 1.45,  my: 2.0,  mz: -0.5, size: 0.68 }, // HTML5
+      { dx: -3.9, dy: 0.35, dz: 0.3,  mx: -1.65, my: 0.85, mz: 0.2,  size: 0.66 }, // JavaScript
+      { dx: 3.8,  dy: 0.45, dz: 0.2,  mx: 1.65,  my: 0.9,  mz: 0.2,  size: 0.74 }, // Python
+      { dx: -3.2, dy: -0.85,dz: -0.4, mx: -1.55, my: -0.25,mz: -0.3, size: 0.68 }, // Tailwind CSS
+      { dx: 3.3,  dy: -0.75,dz: -0.3, mx: 1.55,  my: -0.2, mz: -0.3, size: 0.70 }, // Node.js
+      { dx: -2.6, dy: 2.15, dz: -1.4, mx: -0.85, my: 2.45, mz: -1.1, size: 0.65 }, // CSS3
+      { dx: 2.6,  dy: 2.2,  dz: -1.3, mx: 0.85,  my: 2.45, mz: -1.1, size: 0.72 }, // MongoDB
+      { dx: -2.7, dy: -1.55,dz: 0.6,  mx: -1.25, my: -1.35,mz: 0.5,  size: 0.72 }, // Docker
+      { dx: 2.8,  dy: -1.5, dz: 0.5,  mx: 1.25,  my: -1.35,mz: 0.5,  size: 0.70 }  // Kubernetes
     ];
 
     DEV_LOGOS_MANIFEST.forEach((entry, idx) => {
-      const pos = orbitalPositions[idx] || { x: 3.0, y: 0, z: -1, size: 0.68 };
+      const pos = orbitalPositions[idx] || {
+        dx: 3.0, dy: 0, dz: -1, mx: 1.4, my: 0, mz: -0.5, size: 0.68
+      };
 
       loader.load(
         entry.file,
@@ -316,20 +348,24 @@ export class TempleScene3D {
             }
           });
 
+          const isMobile = this._isMobileViewport();
           const holder = new THREE.Group();
-          holder.position.set(pos.x, pos.y, pos.z);
+          holder.position.set(
+            isMobile ? pos.mx : pos.dx,
+            isMobile ? pos.my : pos.dy,
+            isMobile ? pos.mz : pos.dz
+          );
           holder.add(rawModel);
 
           this.logosGroup.add(holder);
           this.logoItems.push({
             ...entry,
-            baseX: pos.x,
-            baseY: pos.y,
-            baseZ: pos.z,
+            desktopPos: { x: pos.dx, y: pos.dy, z: pos.dz },
+            mobilePos: { x: pos.mx, y: pos.my, z: pos.mz },
             holder,
             rawModel,
-            currentScale: 1.0,
-            targetScale: 1.0,
+            currentScale: isMobile ? 0.78 : 1.0,
+            targetScale: isMobile ? 0.78 : 1.0,
             currentOpacity: 0.86,
             targetOpacity: 0.86
           });
@@ -343,19 +379,20 @@ export class TempleScene3D {
   }
 
   setHighlightDomain(domain) {
+    const baseMobileScale = this._isMobileViewport() ? 0.78 : 1.0;
     this.logoItems.forEach((item) => {
       if (!domain) {
-        item.targetScale = 1.0;
+        item.targetScale = baseMobileScale;
         item.targetOpacity = 0.86;
       } else if (
         item.domain === domain ||
         (domain === 'ai' && (item.id === 'python' || item.id === 'nodejs' || item.id === 'docker'))
       ) {
-        item.targetScale = 1.38;
+        item.targetScale = baseMobileScale * 1.36;
         item.targetOpacity = 1.0;
       } else {
-        item.targetScale = 0.72;
-        item.targetOpacity = 0.25;
+        item.targetScale = baseMobileScale * 0.72;
+        item.targetOpacity = 0.24;
       }
     });
   }
@@ -391,7 +428,7 @@ export class TempleScene3D {
           color: this.rimLight.color.getHex(),
           wireframe: true,
           transparent: true,
-          opacity: 0.45
+          opacity: 0.48
         });
         const wireMesh = new THREE.Mesh(mesh.geometry, wireMat);
         mesh.add(wireMesh);
@@ -417,14 +454,14 @@ export class TempleScene3D {
       this.keyLight.color.setHex(0xc9c7cc);
       this.rimLight.intensity = 3.6;
       this.lanternLight.intensity = 3.8;
-      this.renderer.toneMappingExposure = 1.1;
+      this.renderer.toneMappingExposure = 1.12;
     } else {
-      this.hemiLight.intensity = 1.35;
-      this.keyLight.intensity = 2.8;
+      this.hemiLight.intensity = 1.4;
+      this.keyLight.intensity = 2.85;
       this.keyLight.color.setHex(0xfff4e8);
-      this.rimLight.intensity = 2.5;
-      this.lanternLight.intensity = 2.1;
-      this.renderer.toneMappingExposure = 1.22;
+      this.rimLight.intensity = 2.55;
+      this.lanternLight.intensity = 2.15;
+      this.renderer.toneMappingExposure = 1.24;
     }
     return this.nightLighting;
   }
@@ -448,35 +485,62 @@ export class TempleScene3D {
     }
   }
 
-  setCameraPreset(presetName) {
+  _getPresetVectors(presetName) {
+    const isMobile = this._isMobileViewport();
+    // En pantallas verticales móviles alejamos ligeramente la cámara y centramos el objetivo
+    // para que el Japanese Temple y los logos .glb queden encuadrados en la ventana central de lectura
+    const distScale = isMobile ? 1.26 : 1.0;
+    const yTargetShift = isMobile ? -0.12 : 0.0;
+
     const presets = {
       hero: {
-        pos: new THREE.Vector3(4.1, 1.35, 5.1),
-        target: new THREE.Vector3(0, 0.15, 0)
+        pos: new THREE.Vector3(4.1 * distScale, 1.35 * distScale, 5.1 * distScale),
+        target: new THREE.Vector3(0, 0.15 + yTargetShift, 0)
       },
       dome: {
-        pos: new THREE.Vector3(2.05, 1.8, 2.25),
-        target: new THREE.Vector3(0, 0.85, 0)
+        pos: new THREE.Vector3(2.05 * distScale, 1.8, 2.25 * distScale),
+        target: new THREE.Vector3(0, 0.85 + yTargetShift, 0)
       },
       portico: {
-        pos: new THREE.Vector3(0.2, -0.75, 3.35),
-        target: new THREE.Vector3(0, -0.05, 0)
+        pos: new THREE.Vector3(0.2, -0.7, 3.35 * distScale),
+        target: new THREE.Vector3(0, -0.05 + yTargetShift, 0)
       },
       top: {
-        pos: new THREE.Vector3(2.8, 4.5, 2.8),
+        pos: new THREE.Vector3(2.8 * distScale, 4.6 * distScale, 2.8 * distScale),
         target: new THREE.Vector3(0, 0.0, 0)
       }
     };
 
-    const chosen = presets[presetName] || presets.hero;
+    return presets[presetName] || presets.hero;
+  }
+
+  setCameraPreset(presetName) {
+    this.currentPreset = presetName || 'hero';
+    const chosen = this._getPresetVectors(this.currentPreset);
     this.cameraTransition = {
       startPos: this.camera.position.clone(),
       endPos: chosen.pos,
       startTarget: this.controls.target.clone(),
       endTarget: chosen.target,
       startTime: performance.now(),
-      duration: 900
+      duration: 850
     };
+  }
+
+  handleViewportChange() {
+    const dims = this._getViewportDimensions();
+    this.width = Math.max(280, dims.width);
+    this.height = Math.max(320, dims.height);
+    const isMobile = this._isMobileViewport();
+
+    this.camera.fov = isMobile ? 46 : 40;
+    this.camera.aspect = this.width / this.height;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(this.width, this.height, false);
+
+    // Reencuadrar suavemente al preset actual para la nueva relación de aspecto
+    this.setCameraPreset(this.currentPreset);
+    this.setHighlightDomain(null);
   }
 
   _updateTelemetryDOM() {
@@ -501,18 +565,26 @@ export class TempleScene3D {
     window.addEventListener(
       'mousemove',
       (e) => {
-        this.targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-        this.targetMouseY = -(e.clientY / window.innerHeight - 0.5) * 2;
+        this.targetMouseX = (e.clientX / Math.max(1, window.innerWidth) - 0.5) * 2;
+        this.targetMouseY = -(e.clientY / Math.max(1, window.innerHeight) - 0.5) * 2;
+      },
+      { passive: true }
+    );
+
+    // Soporte táctil en móviles para paralaje suave mientras se lee la página
+    window.addEventListener(
+      'touchmove',
+      (e) => {
+        if (this.interactiveOrbit || !e.touches || !e.touches[0]) return;
+        const touch = e.touches[0];
+        this.targetMouseX = (touch.clientX / Math.max(1, window.innerWidth) - 0.5) * 1.4;
+        this.targetMouseY = -(touch.clientY / Math.max(1, window.innerHeight) - 0.5) * 1.2;
       },
       { passive: true }
     );
 
     window.addEventListener('resize', () => {
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
-      this.camera.aspect = this.width / this.height;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(this.width, this.height, false);
+      this.handleViewportChange();
     });
   }
 
@@ -537,7 +609,6 @@ export class TempleScene3D {
         if (p >= 1) this.cameraTransition = null;
       }
 
-      // Paralaje suave con el cursor y el scroll para la estructura japonesa y los logos 3D
       this.mouseX += (this.targetMouseX - this.mouseX) * 0.05;
       this.mouseY += (this.targetMouseY - this.mouseY) * 0.05;
 
@@ -545,22 +616,23 @@ export class TempleScene3D {
       const scrollNorm = Math.min(1, Math.max(0, this.scrollY / maxScroll));
 
       if (this.pivotGroup) {
-        this.pivotGroup.position.y = Math.sin(t * 1.1) * 0.04 + scrollNorm * 0.35;
+        this.pivotGroup.position.y = Math.sin(t * 1.1) * 0.04 + scrollNorm * 0.28;
         if (!this.interactiveOrbit) {
           this.pivotGroup.rotation.y = this.mouseX * 0.14;
         }
       }
 
-      // Animación orbital individual de los 10 logos 3D (.glb) alrededor de la estructura japonesa
-      const xSpread = this.width < 900 ? 0.65 : 1.0;
+      const isMobile = this._isMobileViewport();
       for (let i = 0; i < this.logoItems.length; i++) {
         const item = this.logoItems[i];
         const h = item.holder;
+        const anchor = isMobile ? item.mobilePos : item.desktopPos;
 
-        const floatY = Math.sin(t * item.speed + item.phase) * 0.18;
-        const floatX = Math.cos(t * (item.speed * 0.7) + item.phase) * 0.12;
-        h.position.x = item.baseX * xSpread + floatX + this.mouseX * 0.22;
-        h.position.y = item.baseY + floatY + this.mouseY * 0.15;
+        const floatY = Math.sin(t * item.speed + item.phase) * (isMobile ? 0.12 : 0.18);
+        const floatX = Math.cos(t * (item.speed * 0.7) + item.phase) * (isMobile ? 0.08 : 0.12);
+        h.position.x = anchor.x + floatX + this.mouseX * (isMobile ? 0.12 : 0.22);
+        h.position.y = anchor.y + floatY + this.mouseY * (isMobile ? 0.1 : 0.15);
+        h.position.z = anchor.z;
 
         h.rotation.y = Math.sin(t * item.speed * 0.8 + item.phase) * 0.45 + t * 0.22;
         h.rotation.x = Math.cos(t * item.speed * 0.6 + item.phase) * 0.18;

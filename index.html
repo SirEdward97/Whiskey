@@ -134,7 +134,6 @@
               <span class="header-handle">@SIREDWARD97</span>
             </div>
           </a>
-
           <!-- Columna 7-12: Pill Nav Buttons (hi.md lines 107-111) -->
           <div class="header-nav-cell">
             <nav aria-label="Navegación principal">
@@ -167,15 +166,27 @@
               </ul>
             </nav>
 
-            <button
-              type="button"
-              class="pill-nav-btn ember-pill"
-              id="btn-inspect-3d"
-              title="Despejar interfaz y orbitar la estructura Japanese Temple y los logos 3D del fondo"
-            >
-              <span class="ember-dot"></span>
-              <span id="label-inspect-3d">ORBITAR FONDO 3D</span>
-            </button>
+            <div class="header-action-group">
+              <button
+                type="button"
+                class="pill-nav-btn"
+                id="btn-mobile-preview"
+                title="Previsualizar versión móvil adaptada (390px Portrait) con renderizado 3D"
+              >
+                <span class="glyph">+</span>
+                <span id="label-mobile-preview">VISTA MÓVIL</span>
+              </button>
+
+              <button
+                type="button"
+                class="pill-nav-btn ember-pill"
+                id="btn-inspect-3d"
+                title="Despejar interfaz y orbitar la estructura Japanese Temple y los logos 3D del fondo"
+              >
+                <span class="ember-dot"></span>
+                <span id="label-inspect-3d">ORBITAR 3D</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -193,7 +204,7 @@
               <span class="ghost-glass-tag">
                 <span class="ember-dot"></span> EDWAR GRANADOS // @SIREDWARD97
               </span>
-              <span class="ghost-glass-tag">FULL-STACK SOFTWARE ENGINEER</span>
+              <span class="ghost-glass-tag">TECNÓLOGO FRONT-END &amp; FULL-STACK</span>
               <span class="ghost-glass-tag">THREE.JS &amp; GLTF 2.0</span>
               <span class="ghost-glass-tag">PYTHON · NODE.JS · FLUTTER · AI</span>
             </div>
@@ -204,7 +215,12 @@
           </div>
 
           <!-- Ventana abierta donde brilla la estructura Japanese Temple y los 10 logos 3D en el fondo -->
-          <div class="hero-open-viewport" aria-hidden="true"></div>
+          <div class="hero-open-viewport" aria-label="Ventana de visualización del renderizado 3D">
+            <div class="mobile-3d-window-hint">
+              <span class="ember-dot"></span>
+              <span>RENDER 3D EN VIVO · PULSA "ORBITAR 3D" PARA ROTAR CON EL DEDO</span>
+            </div>
+          </div>
 
           <!-- Barra inferior del Hero con descripción en Die Grotesk B y controles del fondo 3D -->
           <div class="hero-bottom-grid">
@@ -539,7 +555,7 @@
             <div class="section-header-row">
               <div class="section-meta-col">
                 <span class="ember-dot"></span>
-                <span>INGENIERÍA EN PRODUCCIÓN</span>
+                <span>DESARROLLO EN PRODUCCIÓN</span>
               </div>
               <div class="section-title-col">
                 <h2 class="grotesk-heading">
@@ -627,7 +643,7 @@
 
                 <ul class="contact-direct-list">
                   <li>
-                    <span>INGENIERO</span>
+                    <span>TECNÓLOGO FRONT-END</span>
                     <strong>EDWAR GRANADOS</strong>
                   </li>
                   <li>
@@ -696,7 +712,7 @@
       <div class="grid-container">
         <div class="footer-flex">
           <div>
-            <span class="ember-dot"></span> EDWAR GRANADOS (@SIREDWARD97) // FULL-STACK &amp; 3D SOFTWARE ENGINEER
+            <span class="ember-dot"></span> EDWAR GRANADOS (@SIREDWARD97) // TECNÓLOGO FRONT-END &amp; FULL-STACK 3D
           </div>
           <div>
             MODELO 3D:
@@ -720,6 +736,20 @@
         </div>
       </div>
     </footer>
+  </div>
+
+  <!-- Barra flotante inferior de control 3D (activa en Modo Orbitar 3D para móviles y escritorio) -->
+  <div class="floating-orbit-dock" id="floating-orbit-dock" aria-label="Controles rápidos del modo 3D">
+    <button type="button" class="pill-nav-btn active" data-camera-preset="hero">GENERAL</button>
+    <button type="button" class="pill-nav-btn" data-camera-preset="dome">CÚPULA</button>
+    <button type="button" class="pill-nav-btn" data-camera-preset="portico">PÓRTICO</button>
+    <button type="button" class="pill-nav-btn" data-camera-preset="top">CENITAL</button>
+    <button type="button" class="pill-nav-btn" data-render-mode="pbr">PBR</button>
+    <button type="button" class="pill-nav-btn" data-render-mode="wireframe">WIREFRAME</button>
+    <button type="button" class="pill-nav-btn" data-render-mode="clay">RELIEVE</button>
+    <button type="button" class="pill-nav-btn ember-pill" id="btn-exit-orbit-dock">
+      <span class="ember-dot"></span> VOLVER A LECTURA
+    </button>
   </div>
 
   <!-- Modal para inspección de mapa PBR -->

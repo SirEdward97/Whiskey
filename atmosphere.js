@@ -66,11 +66,15 @@ export class AtmosphereBackground {
   }
 
   _handleResize() {
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+    this.width = this.canvas.clientWidth || window.innerWidth;
+    this.height = this.canvas.clientHeight || window.innerHeight;
     const scale = 0.65 * this.dpr;
     this.canvas.width = Math.max(1, Math.floor(this.width * scale));
     this.canvas.height = Math.max(1, Math.floor(this.height * scale));
+  }
+
+  handleViewportChange() {
+    this._handleResize();
   }
 
   _initFolds() {
