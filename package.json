@@ -1,0 +1,11 @@
+{
+  "name": "edwar-granados-portfolio",
+  "version": "1.0.0",
+  "description": "Portafolio Full-Stack & 3D (Three.js) de Edwar Granados (@SirEdward97)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Edwar Granados (@SirEdward97)",
+  "license": "MIT"
+}

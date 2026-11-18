@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edwar Granados (@SirEdward97) — Full-Stack &amp; Interactive 3D</title>
+  <meta
+    name="description"
+    content="Portafolio de Edwar Granados (@SirEdward97). Desarrollo de software Full-Stack, interfaces interactivas 3D con Three.js, Flutter, Python (Django, FastAPI), Node.js (Express, NestJS), GraphQL, bases de datos, Docker y flujos con IA."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="./styles.css" />
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three.module.js",
+        "three/addons/": "./vendor/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- ========================================================================
+       FONDO TRIDIMENSIONAL COMPLETO DE LA PÁGINA
+       1. #atmosphere-canvas: Pliegues verticales de luz (sk.md + Onyx/Ember hi.md)
+       2. #temple-canvas: Estructura Japanese Temple (scene.gltf) + 10 logos 3D (./dev/*.glb)
+       ======================================================================== -->
+  <canvas id="atmosphere-canvas" aria-hidden="true"></canvas>
+  <canvas id="temple-canvas" aria-label="Fondo 3D con estructura Japanese Temple y logos tecnológicos"></canvas>
+
+  <!-- Indicador de carga discreto -->
+  <div class="stage-loader" id="stage-loader">
+    <span class="ember-dot"></span>
+    <div class="loader-progress-track">
+      <div class="loader-progress-bar" id="loader-progress-bar"></div>
+    </div>
+    <div class="loader-text" id="loader-text">CARGANDO ESCENA 3D...</div>
+  </div>
+
+  <!-- Panel flotante de ajuste de atmósfera (sk.md + hi.md) -->
+  <aside class="stage-atmosphere-panel" id="atmosphere-drawer" aria-label="Afinación de atmósfera">
+    <div class="atmo-panel-head">
+      <span>ATMÓSFERA DE FONDO (SK.MD)</span>
+      <button type="button" class="pill-nav-btn" id="btn-close-drawer" style="padding: 3px 9px;">
+        CERRAR
+      </button>
+    </div>
+
+    <div class="atmo-row">
+      <div class="atmo-label">
+        <span>TONO DE LUZ (HI.MD)</span>
+      </div>
+      <div class="atmo-swatches">
+        <button type="button" class="pill-nav-btn theme-swatch active" data-theme="ember">
+          <span class="ember-dot"></span> EMBER
+        </button>
+        <button type="button" class="pill-nav-btn theme-swatch" data-theme="monochrome">
+          SILVER
+        </button>
+        <button type="button" class="pill-nav-btn theme-swatch" data-theme="cyan">
+          CIAN
+        </button>
+      </div>
+    </div>
+
+    <div class="atmo-row">
+      <div class="atmo-label">
+        <span>PLIEGUES VERTICALES</span>
+        <span id="val-folds">11</span>
+      </div>
+      <input type="range" id="knob-folds" class="atmo-slider" min="5" max="18" step="1" value="11" />
+    </div>
+
+    <div class="atmo-row">
+      <div class="atmo-label">
+        <span>DERIVA SINUSOIDAL</span>
+        <span id="val-drift">100%</span>
+      </div>
+      <input type="range" id="knob-drift" class="atmo-slider" min="0.2" max="2.0" step="0.1" value="1.0" />
+    </div>
+
+    <div class="atmo-row" style="margin-bottom: 0;">
+      <div class="atmo-label">
+        <span>SUAVIDAD ADITIVA</span>
+        <span id="val-softness">105%</span>
+      </div>
+      <input type="range" id="knob-softness" class="atmo-slider" min="0.6" max="1.6" step="0.05" value="1.05" />
+    </div>
+  </aside>
+
+  <!-- Guías verticales de la cuadrícula de 12 columnas -->
+  <div class="architectural-grid-guides" aria-hidden="true">
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+    <div class="grid-guide-col"></div>
+  </div>
+
+  <div class="page-shell">
+    <!-- ======================================================================
+         HEADER GRID CON LOGO (./logo/edward.png) + PILL NAV (hi.md)
+         ====================================================================== -->
+    <header class="site-header">
+      <div class="grid-container">
+        <div class="header-grid">
+          <!-- Columna 1-4: Logo edward.png + Identidad -->
+          <a href="#inicio" class="header-brand">
+            <div class="brand-logo-frame">
+              <img
+                src="./logo/edward.png"
+                alt="Logo de Edwar Granados"
+                class="brand-logo-img"
+              />
+            </div>
+            <div class="brand-identity">
+              <div class="brand-title-row">
+                <span class="header-name">Edwar Granados</span>
+                <span class="ember-dot" title="Disponible para proyectos"></span>
+              </div>
+              <span class="header-handle">@SIREDWARD97</span>
+            </div>
+          </a>
+
+          <!-- Columna 7-12: Pill Nav Buttons (hi.md lines 107-111) -->
+          <div class="header-nav-cell">
+            <nav aria-label="Navegación principal">
+              <ul class="header-nav">
+                <li>
+                  <a href="#inicio" class="pill-nav-btn">
+                    <span class="glyph">+</span> INICIO
+                  </a>
+                </li>
+                <li>
+                  <a href="#capacidades" class="pill-nav-btn">
+                    <span class="glyph">+</span> CAPACIDADES
+                  </a>
+                </li>
+                <li>
+                  <a href="#materiales-pbr" class="pill-nav-btn">
+                    <span class="glyph">+</span> PBR 3D
+                  </a>
+                </li>
+                <li>
+                  <a href="#sistemas" class="pill-nav-btn">
+                    <span class="glyph">+</span> SISTEMAS
+                  </a>
+                </li>
+                <li>
+                  <a href="#contacto" class="pill-nav-btn">
+                    <span class="glyph">+</span> CONTACTO
+                  </a>
+                </li>
+              </ul>
+            </nav>
+
+            <button
+              type="button"
+              class="pill-nav-btn ember-pill"
+              id="btn-inspect-3d"
+              title="Despejar interfaz y orbitar la estructura Japanese Temple y los logos 3D del fondo"
+            >
+              <span class="ember-dot"></span>
+              <span id="label-inspect-3d">ORBITAR FONDO 3D</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ====================================================================
+           DARK HERO SECTION (#161616 Onyx con Display Fade Gradient — hi.md)
+           La estructura Japanese Temple y los 10 logos .glb están en el fondo
+           ==================================================================== -->
+      <section class="dark-hero-section" id="inicio">
+        <div class="grid-container">
+          <div class="monument-headline-wrap">
+            <div class="ghost-glass-row">
+              <span class="ghost-glass-tag">
+                <span class="ember-dot"></span> EDWAR GRANADOS // @SIREDWARD97
+              </span>
+              <span class="ghost-glass-tag">FULL-STACK SOFTWARE ENGINEER</span>
+              <span class="ghost-glass-tag">THREE.JS &amp; GLTF 2.0</span>
+              <span class="ghost-glass-tag">PYTHON · NODE.JS · FLUTTER · AI</span>
+            </div>
+
+            <h1 class="monument-display-title">
+              EDWAR GRANADOS
+            </h1>
+          </div>
+
+          <!-- Ventana abierta donde brilla la estructura Japanese Temple y los 10 logos 3D en el fondo -->
+          <div class="hero-open-viewport" aria-hidden="true"></div>
+
+          <!-- Barra inferior del Hero con descripción en Die Grotesk B y controles del fondo 3D -->
+          <div class="hero-bottom-grid">
+            <div class="hero-bio-col">
+              <p class="hero-bio-text">
+                Desarrollador de software enfocado en el desarrollo web Full-Stack e interfaces interactivas tridimensionales. Creación de aplicaciones de alto rendimiento, integración de flujos con IA y software orientado a resolver problemas reales.
+              </p>
+              <p class="hero-sub-caption">
+                En el fondo de la página se renderizan en tiempo real la estructura Japanese Temple (scene.gltf) junto con los 10 modelos tridimensionales (.glb en ./dev/) que representan mi stack tecnológico.
+              </p>
+            </div>
+
+            <div class="hero-controls-col">
+              <!-- Ángulos de cámara de la estructura japonesa en el fondo -->
+              <div class="control-strip-row" role="group" aria-label="Cámara de estructura 3D">
+                <span class="mono-strip-label">CÁMARA 3D:</span>
+                <button type="button" class="pill-nav-btn active" data-camera-preset="hero">
+                  <span class="glyph">•</span> GENERAL
+                </button>
+                <button type="button" class="pill-nav-btn" data-camera-preset="dome">
+                  <span class="glyph">•</span> CÚPULA
+                </button>
+                <button type="button" class="pill-nav-btn" data-camera-preset="portico">
+                  <span class="glyph">•</span> PÓRTICO
+                </button>
+                <button type="button" class="pill-nav-btn" data-camera-preset="top">
+                  <span class="glyph">•</span> CENITAL
+                </button>
+              </div>
+
+              <!-- Modos de superficie, luz y atmósfera -->
+              <div class="control-strip-row" role="group" aria-label="Superficie y atmósfera">
+                <span class="mono-strip-label">MALLA:</span>
+                <button type="button" class="pill-nav-btn active" data-render-mode="pbr">
+                  <span class="glyph">+</span> PBR
+                </button>
+                <button type="button" class="pill-nav-btn" data-render-mode="wireframe">
+                  <span class="glyph">+</span> WIREFRAME
+                </button>
+                <button type="button" class="pill-nav-btn" data-render-mode="clay">
+                  <span class="glyph">+</span> RELIEVE
+                </button>
+                <button type="button" class="pill-nav-btn" id="btn-toggle-lighting">
+                  <span class="glyph">+</span> LUZ ESTUDIO
+                </button>
+                <button type="button" class="pill-nav-btn" id="btn-atmosphere-toggle">
+                  <span class="glyph">+</span> ATMÓSFERA
+                </button>
+              </div>
+
+              <!-- Telemetría en Ghost Glass Tags (hi.md l.132-136) -->
+              <div class="telemetry-bar">
+                <span class="ghost-glass-tag">
+                  MODELO: JAPANESE TEMPLE + 10 LOGOS GLB
+                </span>
+                <span class="ghost-glass-tag">
+                  VÉRTICES: <strong id="telemetry-vertices">33.629</strong>
+                </span>
+                <span class="ghost-glass-tag">
+                  TRIÁNGULOS: <strong id="telemetry-triangles">29.696</strong>
+                </span>
+                <span class="ghost-glass-tag">
+                  <strong id="telemetry-fps">60 FPS</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transición Horizon Gradient (hi.md l.24, l.240) -->
+      <div class="horizon-divider" aria-hidden="true"></div>
+
+      <!-- ====================================================================
+           SECCIÓN CLARA 1: CAPACIDADES & LOGOS 3D (Paper #f8f8f8 — hi.md)
+           ==================================================================== -->
+      <section class="light-paper-surface" id="capacidades">
+        <div class="grid-container">
+          <!-- Section Opener con Ghosted Section Title (hi.md l.162-166) -->
+          <div class="section-opener">
+            <div class="ghosted-watermark" aria-hidden="true">STACK &amp; 3D</div>
+            <div class="section-header-row">
+              <div class="section-meta-col">
+                <span class="ember-dot"></span>
+                <span>ARQUITECTURA FULL-STACK</span>
+              </div>
+              <div class="section-title-col">
+                <h2 class="grotesk-heading">
+                  Conocimientos técnicos respaldados por los modelos 3D en el fondo de la página.
+                </h2>
+              </div>
+            </div>
+          </div>
+
+          <!-- Brand / Tech Logo Strip (hi.md l.122-126) para filtrar los 10 logos .glb del fondo -->
+          <div class="tech-logo-strip" role="group" aria-label="Filtrar logos 3D del fondo por área">
+            <div class="tech-strip-cell active" data-bg-domain="">
+              <div class="tech-strip-top">
+                <span>./DEV/*.GLB</span>
+                <span class="ember-dot"></span>
+              </div>
+              <div class="tech-strip-name">Todos los Logos 3D (10)</div>
+            </div>
+
+            <div class="tech-strip-cell" data-bg-domain="frontend">
+              <div class="tech-strip-top">
+                <span>05 MODELOS GLB</span>
+                <span>+</span>
+              </div>
+              <div class="tech-strip-name">Frontend &amp; Three.js</div>
+            </div>
+
+            <div class="tech-strip-cell" data-bg-domain="backend">
+              <div class="tech-strip-top">
+                <span>02 MODELOS GLB</span>
+                <span>+</span>
+              </div>
+              <div class="tech-strip-name">Backend &amp; APIs</div>
+            </div>
+
+            <div class="tech-strip-cell" data-bg-domain="data">
+              <div class="tech-strip-top">
+                <span>03 MODELOS GLB</span>
+                <span>+</span>
+              </div>
+              <div class="tech-strip-name">Datos &amp; DevOps</div>
+            </div>
+
+            <div class="tech-strip-cell" data-bg-domain="ai">
+              <div class="tech-strip-top">
+                <span>ORQUESTACIÓN</span>
+                <span>+</span>
+              </div>
+              <div class="tech-strip-name">Flujos con IA</div>
+            </div>
+          </div>
+
+          <div class="section-grid-layout">
+            <aside class="section-sidebar">
+              <p class="sidebar-note">
+                Pasa el cursor sobre cualquier fila o pulsa una categoría superior para resaltar sus logos tridimensionales alrededor de la estructura japonesa en el fondo.
+              </p>
+              <div class="bg-logos-controls">
+                <a
+                  href="https://github.com/SirEdward97"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="pill-light-btn"
+                  style="text-decoration: none; display: inline-block;"
+                >
+                  + GITHUB @SIREDWARD97
+                </a>
+              </div>
+            </aside>
+
+            <div class="section-main-col">
+              <div class="capability-rows">
+                <!-- Fila 1: Frontend & 3D -->
+                <article class="capability-row" data-domain="frontend">
+                  <div>
+                    <h3 class="cap-domain">Frontend &amp; Experiencias 3D</h3>
+                    <span class="cap-focus-tag">INTERFACES WEB, MÓVIL Y WEBGL</span>
+                  </div>
+                  <p class="cap-description">
+                    Desarrollo de interfaces reactivas, sistemas de diseño con Tailwind CSS, aplicaciones multiplataforma en Flutter y experiencias tridimensionales interactivas en Three.js.
+                  </p>
+                  <ul class="onyx-tag-cloud">
+                    <li class="onyx-tag">HTML5</li>
+                    <li class="onyx-tag">CSS3</li>
+                    <li class="onyx-tag">JAVASCRIPT</li>
+                    <li class="onyx-tag">TAILWIND CSS</li>
+                    <li class="onyx-tag">FLUTTER</li>
+                    <li class="onyx-tag">THREE.JS</li>
+                  </ul>
+                </article>
+
+                <!-- Fila 2: Backend & APIs -->
+                <article class="capability-row" data-domain="backend">
+                  <div>
+                    <h3 class="cap-domain">Backend &amp; Arquitectura de APIs</h3>
+                    <span class="cap-focus-tag">SERVICIOS EN PYTHON, NODE.JS Y GRAPHQL</span>
+                  </div>
+                  <p class="cap-description">
+                    Construcción de APIs REST y esquemas GraphQL de baja latencia utilizando frameworks asíncronos y empresariales en Python y Node.js.
+                  </p>
+                  <ul class="onyx-tag-cloud">
+                    <li class="onyx-tag">PYTHON</li>
+                    <li class="onyx-tag">DJANGO</li>
+                    <li class="onyx-tag">FASTAPI</li>
+                    <li class="onyx-tag">NODE.JS</li>
+                    <li class="onyx-tag">EXPRESS</li>
+                    <li class="onyx-tag">NESTJS</li>
+                    <li class="onyx-tag">GRAPHQL</li>
+                  </ul>
+                </article>
+
+                <!-- Fila 3: Bases de Datos & DevOps -->
+                <article class="capability-row" data-domain="data">
+                  <div>
+                    <h3 class="cap-domain">Bases de Datos &amp; DevOps</h3>
+                    <span class="cap-focus-tag">PERSISTENCIA SQL/NOSQL Y CONTENEDORES</span>
+                  </div>
+                  <p class="cap-description">
+                    Modelado relacional y documental, sincronización en tiempo real con Supabase y despliegues contenedorizados sobre servidores Linux (Ubuntu).
+                  </p>
+                  <ul class="onyx-tag-cloud">
+                    <li class="onyx-tag">POSTGRESQL</li>
+                    <li class="onyx-tag">MYSQL</li>
+                    <li class="onyx-tag">MONGODB</li>
+                    <li class="onyx-tag">SUPABASE</li>
+                    <li class="onyx-tag">LINUX (UBUNTU)</li>
+                    <li class="onyx-tag">DOCKER</li>
+                    <li class="onyx-tag">KUBERNETES</li>
+                  </ul>
+                </article>
+
+                <!-- Fila 4: Enfoque & IA -->
+                <article class="capability-row" data-domain="ai">
+                  <div>
+                    <h3 class="cap-domain">Enfoque: Alto Rendimiento &amp; IA</h3>
+                    <span class="cap-focus-tag">SOLUCIONES A PROBLEMAS REALES</span>
+                  </div>
+                  <p class="cap-description">
+                    Creación de aplicaciones web de alto rendimiento, integración de flujos automatizados con inteligencia artificial y arquitectura orientada al producto.
+                  </p>
+                  <ul class="onyx-tag-cloud">
+                    <li class="onyx-tag">AI WORKFLOWS</li>
+                    <li class="onyx-tag">LLMS</li>
+                    <li class="onyx-tag">WEBGL 60FPS</li>
+                    <li class="onyx-tag">ALTO RENDIMIENTO</li>
+                    <li class="onyx-tag">ARQUITECTURA LIMPIA</li>
+                  </ul>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECCIÓN CLARA 2: TEXTURAS PBR DE LA ESTRUCTURA JAPONESA (Fog #f1f1f1)
+           ==================================================================== -->
+      <section class="light-fog-surface" id="materiales-pbr">
+        <div class="grid-container">
+          <div class="section-opener">
+            <div class="ghosted-watermark" aria-hidden="true">PBR SHADERS</div>
+            <div class="section-header-row">
+              <div class="section-meta-col">
+                <span class="ember-dot"></span>
+                <span>PIPELINE THREE.JS // SCENE.GLTF</span>
+              </div>
+              <div class="section-title-col">
+                <h2 class="grotesk-heading">
+                  Mapas de materiales físicamente basados aplicados a la estructura de fondo.
+                </h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="pbr-maps-strip">
+            <article
+              class="pbr-map-item texture-card"
+              data-tex-title="MAPA BASECOLOR (ALBEDO SRGB)"
+              data-tex-src="./textures/Japanese_Shrine_Mat_baseColor.jpeg"
+              data-tex-desc="Define el color difuso de la madera lacada en bermellón, los remates dorados, los paneles shoji y la pizarra de las cubiertas."
+            >
+              <div class="pbr-map-frame">
+                <img
+                  src="./textures/Japanese_Shrine_Mat_baseColor.jpeg"
+                  alt="Mapa BaseColor del modelo Japanese Temple"
+                  loading="lazy"
+                />
+              </div>
+              <div class="pbr-map-title">
+                <span>BaseColor / Albedo</span>
+                <span class="onyx-tag">SRGB JPEG</span>
+              </div>
+              <p class="pbr-map-caption">
+                Pigmentación difusa para madera bermellón, carpintería, paneles shoji y ornamentos metálicos.
+              </p>
+            </article>
+
+            <article
+              class="pbr-map-item texture-card"
+              data-tex-title="MAPA METALLIC-ROUGHNESS Y OCLUSIÓN"
+              data-tex-src="./textures/Japanese_Shrine_Mat_metallicRoughness.png"
+              data-tex-desc="Empaqueta la oclusión ambiental, la rugosidad superficial y el comportamiento metálico en canales RGB independientes para el shader físico."
+            >
+              <div class="pbr-map-frame">
+                <img
+                  src="./textures/Japanese_Shrine_Mat_metallicRoughness.png"
+                  alt="Mapa MetallicRoughness del modelo Japanese Temple"
+                  loading="lazy"
+                />
+              </div>
+              <div class="pbr-map-title">
+                <span>Metallic &amp; Roughness</span>
+                <span class="onyx-tag">ORM PNG</span>
+              </div>
+              <p class="pbr-map-caption">
+                Controla la respuesta especular del oro frente al acabado mate de la madera y las tejas.
+              </p>
+            </article>
+
+            <article
+              class="pbr-map-item texture-card"
+              data-tex-title="MAPA DE NORMALES EN ESPACIO TANGENTE"
+              data-tex-src="./textures/Japanese_Shrine_Mat_normal.png"
+              data-tex-desc="Simula el relieve de las tejas, vetas de madera y ensambles arquitectónicos al calcular la reflexión de luz por píxel."
+            >
+              <div class="pbr-map-frame">
+                <img
+                  src="./textures/Japanese_Shrine_Mat_normal.png"
+                  alt="Mapa Normal del modelo Japanese Temple"
+                  loading="lazy"
+                />
+              </div>
+              <div class="pbr-map-title">
+                <span>Tangent Normal Map</span>
+                <span class="onyx-tag">XYZ PNG</span>
+              </div>
+              <p class="pbr-map-caption">
+                Aporta relieve microsuperficial bajo la iluminación direccional sin incrementar el conteo poligonal.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECCIÓN CLARA 3: SISTEMAS Y CONTACTO (Paper #f8f8f8 — hi.md)
+           ==================================================================== -->
+      <section class="light-paper-surface" id="sistemas">
+        <div class="grid-container">
+          <div class="section-opener">
+            <div class="ghosted-watermark" aria-hidden="true">SISTEMAS</div>
+            <div class="section-header-row">
+              <div class="section-meta-col">
+                <span class="ember-dot"></span>
+                <span>INGENIERÍA EN PRODUCCIÓN</span>
+              </div>
+              <div class="section-title-col">
+                <h2 class="grotesk-heading">
+                  Arquitecturas diseñadas para operar con velocidad, precisión y claridad.
+                </h2>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 72px;">
+            <article class="system-entry">
+              <div>
+                <h3 class="system-title">Entorno WebGL 3D &amp; Constelación GLB</h3>
+                <span class="cap-focus-tag">FRONTEND 3D &amp; INTERACCIÓN</span>
+              </div>
+              <p class="system-narrative">
+                Escenario tridimensional de página completa en Three.js que combina la estructura Japanese Temple (glTF 2.0) con los 10 modelos .glb de tecnologías en ./dev/, normalización automática de geometría y pliegues de luz atmosférica.
+              </p>
+              <ul class="onyx-tag-cloud">
+                <li class="onyx-tag">THREE.JS</li>
+                <li class="onyx-tag">GLTF / GLB</li>
+                <li class="onyx-tag">JAVASCRIPT</li>
+                <li class="onyx-tag">TAILWIND CSS</li>
+              </ul>
+            </article>
+
+            <article class="system-entry">
+              <div>
+                <h3 class="system-title">Orquestador de Flujos con IA &amp; API Unificada</h3>
+                <span class="cap-focus-tag">BACKEND ASÍNCRONO &amp; LLMS</span>
+              </div>
+              <p class="system-narrative">
+                Servicio backend construido sobre FastAPI, Django y GraphQL para coordinar tareas asistidas por inteligencia artificial, almacenamiento transaccional en PostgreSQL/MySQL y registro documental en MongoDB.
+              </p>
+              <ul class="onyx-tag-cloud">
+                <li class="onyx-tag">PYTHON</li>
+                <li class="onyx-tag">FASTAPI</li>
+                <li class="onyx-tag">DJANGO</li>
+                <li class="onyx-tag">GRAPHQL</li>
+                <li class="onyx-tag">MONGODB</li>
+              </ul>
+            </article>
+
+            <article class="system-entry">
+              <div>
+                <h3 class="system-title">Plataforma Multiplataforma en Tiempo Real</h3>
+                <span class="cap-focus-tag">FLUTTER, NODE.JS &amp; DEVOPS</span>
+              </div>
+              <p class="system-narrative">
+                Ecosistema cliente-servidor que vincula aplicaciones en Flutter y web con microservicios en NestJS/Express, suscripciones en vivo de Supabase y contenedores Docker sobre servidores Linux (Ubuntu).
+              </p>
+              <ul class="onyx-tag-cloud">
+                <li class="onyx-tag">FLUTTER</li>
+                <li class="onyx-tag">NESTJS</li>
+                <li class="onyx-tag">EXPRESS</li>
+                <li class="onyx-tag">SUPABASE</li>
+                <li class="onyx-tag">DOCKER</li>
+                <li class="onyx-tag">UBUNTU</li>
+              </ul>
+            </article>
+          </div>
+
+          <!-- Bloque de Contacto -->
+          <div id="contacto">
+            <div class="section-opener">
+              <div class="ghosted-watermark" aria-hidden="true">CONTACTO</div>
+              <div class="section-header-row">
+                <div class="section-meta-col">
+                  <span class="ember-dot"></span>
+                  <span>COLABORACIÓN DIRECTA</span>
+                </div>
+                <div class="section-title-col">
+                  <h2 class="grotesk-heading">
+                    Inicia una conversación técnica o estructura tu encargo para @SirEdward97.
+                  </h2>
+                </div>
+              </div>
+            </div>
+
+            <div class="contact-split">
+              <div>
+                <p class="sidebar-note">
+                  Disponible para desarrollo de aplicaciones web Full-Stack, experiencias tridimensionales en Three.js, arquitecturas de APIs en Python y Node.js, e integración de flujos con IA.
+                </p>
+
+                <ul class="contact-direct-list">
+                  <li>
+                    <span>INGENIERO</span>
+                    <strong>EDWAR GRANADOS</strong>
+                  </li>
+                  <li>
+                    <span>GITHUB</span>
+                    <a href="https://github.com/SirEdward97" target="_blank" rel="noopener noreferrer">
+                      GITHUB.COM/SIREDWARD97
+                    </a>
+                  </li>
+                  <li>
+                    <span>ESTADO</span>
+                    <span><span class="ember-dot"></span> DISPONIBLE</span>
+                  </li>
+                </ul>
+              </div>
+
+              <form class="editorial-form" id="contact-form">
+                <div class="editorial-form-row">
+                  <div class="field-wrap">
+                    <label for="input-name">NOMBRE O EMPRESA</label>
+                    <input
+                      type="text"
+                      id="input-name"
+                      class="field-input"
+                      placeholder="Tu nombre o estudio"
+                      required
+                    />
+                  </div>
+
+                  <div class="field-wrap">
+                    <label for="input-stack">ÁREA PRINCIPAL</label>
+                    <select id="input-stack" class="field-input">
+                      <option value="Full-Stack Web & Experiencias 3D (Three.js)">Full-Stack Web &amp; Experiencias 3D (Three.js)</option>
+                      <option value="Backend & APIs (Python FastAPI / Django / NestJS / GraphQL)">Backend &amp; APIs (Python / Node.js / GraphQL)</option>
+                      <option value="Integración de Flujos con IA">Integración de Flujos con IA</option>
+                      <option value="Aplicación Multiplataforma (Flutter & Supabase)">Aplicación Multiplataforma (Flutter &amp; Supabase)</option>
+                      <option value="Bases de Datos & DevOps (PostgreSQL / MongoDB / Docker / Linux)">Bases de Datos &amp; DevOps (Docker / Linux)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="field-wrap">
+                  <label for="input-message">OBJETIVO DEL PROYECTO</label>
+                  <textarea
+                    id="input-message"
+                    class="field-input"
+                    placeholder="Describe el sistema o experiencia interactiva que deseas construir..."
+                    required
+                  ></textarea>
+                </div>
+
+                <div>
+                  <button type="submit" class="pill-light-btn active">
+                    + COPIAR RESUMEN DEL ENCARGO
+                  </button>
+                </div>
+                <div class="form-status" id="form-feedback" aria-live="polite"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer Onyx -->
+    <footer class="editorial-footer">
+      <div class="grid-container">
+        <div class="footer-flex">
+          <div>
+            <span class="ember-dot"></span> EDWAR GRANADOS (@SIREDWARD97) // FULL-STACK &amp; 3D SOFTWARE ENGINEER
+          </div>
+          <div>
+            MODELO 3D:
+            <a
+              href="https://sketchfab.com/3d-models/japanese-temple-a210febbec4f454dbd0df1d142be06bc"
+              target="_blank"
+              rel="noopener noreferrer"
+            >"JAPANESE TEMPLE"</a>
+            POR
+            <a
+              href="https://sketchfab.com/spectraut2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >JAINESH PATHAK</a>
+            (<a
+              href="http://creativecommons.org/licenses/by/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >CC-BY-4.0</a>)
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal para inspección de mapa PBR -->
+  <div class="modal-backdrop" id="texture-modal" role="dialog" aria-modal="true">
+    <div class="modal-sheet">
+      <div class="modal-sheet-head">
+        <span id="modal-texture-title">MAPA PBR</span>
+        <button type="button" class="pill-light-btn" id="btn-close-modal">
+          CERRAR
+        </button>
+      </div>
+      <img src="" alt="" class="modal-img-preview" id="modal-texture-img" />
+      <p style="font-size: 15px; color: var(--color-stone);" id="modal-texture-desc"></p>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

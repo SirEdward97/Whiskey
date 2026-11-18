@@ -1,0 +1,1100 @@
+/* ==========================================================================
+   EDWAR GRANADOS (@SirEdward97) — PORTAFOLIO FULL-STACK & 3D
+   Sistema de Diseño: Dylanbrouwer Style Reference (hi.md) + Cuadrícula (ill.md)
+   ========================================================================== */
+
+:root {
+  /* Tokens de Color — hi.md */
+  --color-ember-orange: #ff6436;
+  --color-onyx: #161616;
+  --color-graphite: #3c3a3e;
+  --color-stone: #7b7a7c;
+  --color-ash: #a2a2a2;
+  --color-silver-mist: #c9c7cc;
+  --color-fog: #f1f1f1;
+  --color-paper: #f8f8f8;
+  --color-pure-white: #ffffff;
+
+  /* Gradientes Tipográficos y de Horizonte — hi.md */
+  --gradient-display-fade: linear-gradient(
+    180deg,
+    rgb(38, 38, 40) 0%,
+    rgb(110, 108, 112) 25%,
+    rgb(185, 183, 187) 50%,
+    rgb(220, 214, 214) 75%,
+    rgb(241, 241, 241) 100%
+  );
+  --gradient-horizon: linear-gradient(90deg, rgb(123, 122, 124), rgb(60, 58, 62));
+
+  /* Familias Tipográficas — hi.md */
+  --font-die-grotesk-b: 'Inter', 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-abc-gravity-variable: 'Anton', 'Bebas Neue', 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  --font-ibm-plex-mono: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Espaciado base 6px y Layout — hi.md */
+  --spacing-6: 6px;
+  --spacing-12: 12px;
+  --spacing-18: 18px;
+  --spacing-24: 24px;
+  --spacing-48: 48px;
+  --spacing-60: 60px;
+  --spacing-72: 72px;
+  --spacing-96: 96px;
+  --page-max-width: 1260px;
+
+  /* Radios — hi.md (9999px para botones/nav interactivos, 0px para tarjetas/paneles) */
+  --radius-pill: 9999px;
+  --radius-sharp: 0px;
+
+  /* Curvas de Movimiento — hi.md */
+  --ease-enter: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-morph: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-onyx);
+  color: var(--color-graphite);
+  font-family: var(--font-die-grotesk-b);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.3;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--color-onyx);
+  color: var(--color-graphite);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ==========================================================================
+   FONDO TRIDIMENSIONAL COMPLETO DE LA PÁGINA
+   1. #atmosphere-canvas: Pliegues de luz vertical (sk.md + Onyx/Ember hi.md)
+   2. #temple-canvas: Estructura Japanese Temple (scene.gltf) + 10 logos 3D (./dev/*.glb)
+   ========================================================================== */
+#atmosphere-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+}
+
+#temple-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  display: block;
+  cursor: grab;
+}
+
+#temple-canvas:active {
+  cursor: grabbing;
+}
+
+/* Guías verticales sutiles de cuadrícula (Silver Mist #c9c7cc al 10%) */
+.architectural-grid-guides {
+  position: fixed;
+  inset: 0;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  pointer-events: none;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+}
+
+.grid-guide-col {
+  border-left: 1px solid rgba(201, 199, 204, 0.07);
+  height: 100%;
+}
+
+.grid-guide-col:last-child {
+  border-right: 1px solid rgba(201, 199, 204, 0.07);
+}
+
+.page-shell {
+  position: relative;
+  z-index: 3;
+  transition: opacity 0.45s var(--ease-enter);
+}
+
+/* Modo inspección limpia del fondo 3D */
+body.inspect-3d-background .page-shell > main {
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.grid-container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ==========================================================================
+   HEADER GRID MEJORADO CON LOGO (./logo/edward.png) + PILL NAV (hi.md)
+   ========================================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(22, 22, 22, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(201, 199, 204, 0.16);
+}
+
+.header-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 66px;
+  padding: 10px 0;
+}
+
+/* Columna 1-4: Logo edward.png + Nombre + Handle */
+.header-brand {
+  grid-column: 1 / 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--color-fog);
+}
+
+.brand-logo-frame {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-fog);
+  border: 1px solid var(--color-silver-mist);
+  border-radius: var(--radius-sharp);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: border-color 0.3s var(--ease-enter), transform 0.3s var(--ease-enter);
+}
+
+.header-brand:hover .brand-logo-frame {
+  border-color: var(--color-ember-orange);
+  transform: scale(1.04);
+}
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.brand-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-name {
+  font-family: var(--font-die-grotesk-b);
+  font-weight: 500;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  color: var(--color-pure-white);
+}
+
+/* Ember Status Dot (#ff6436) — hi.md lines 137-141 */
+.ember-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-ember-orange);
+  display: inline-block;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(255, 100, 54, 0.65);
+}
+
+.header-handle {
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--color-ash);
+}
+
+/* Columna 5-7: Estado Técnico Monospace */
+.header-status-cell {
+  grid-column: 5 / 7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--color-stone);
+  border-left: 1px solid rgba(201, 199, 204, 0.15);
+  padding-left: 12px;
+}
+
+/* Columna 7-13: Pill Nav Buttons — hi.md lines 107-111 */
+.header-nav-cell {
+  grid-column: 7 / 13;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.pill-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid rgba(201, 199, 204, 0.24);
+  border-radius: var(--radius-pill);
+  padding: 7px 12px;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--color-fog);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-enter);
+}
+
+.pill-nav-btn .glyph {
+  color: var(--color-ash);
+  font-size: 12px;
+}
+
+.pill-nav-btn:hover,
+.pill-nav-btn.active {
+  background: var(--color-fog);
+  color: var(--color-onyx);
+  border-color: var(--color-fog);
+}
+
+.pill-nav-btn:hover .glyph,
+.pill-nav-btn.active .glyph {
+  color: var(--color-ember-orange);
+}
+
+.pill-nav-btn.ember-pill {
+  border-color: rgba(255, 100, 54, 0.55);
+}
+
+/* ==========================================================================
+   DARK HERO SECTION (#161616 Onyx sobre el fondo 3D Japanese Temple + Logos)
+   hi.md lines 142-146, 207, 220
+   ========================================================================== */
+.dark-hero-section {
+  position: relative;
+  min-height: calc(100vh - 66px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 36px 0 28px;
+  background: radial-gradient(
+    circle at 55% 48%,
+    rgba(22, 22, 22, 0.12) 0%,
+    rgba(22, 22, 22, 0.52) 68%,
+    rgba(22, 22, 22, 0.82) 100%
+  );
+  border-bottom: 1px solid rgba(201, 199, 204, 0.2);
+}
+
+/* Monument Display Headline — ABC Gravity Variable style (hi.md l.142-145) */
+.monument-headline-wrap {
+  margin-bottom: 18px;
+}
+
+.ghost-glass-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+/* Ghost Glass Tag — hi.md lines 132-136 */
+.ghost-glass-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sharp);
+  padding: 2px 6px;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.monument-display-title {
+  font-family: var(--font-abc-gravity-variable);
+  font-size: clamp(3.8rem, 11.5vw, 9.6rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 0.82;
+  letter-spacing: -0.015em;
+  background: var(--gradient-display-fade);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  user-select: none;
+}
+
+/* Zona central abierta para que el Japanese Temple (scene.gltf) y los 10 logos .glb sean protagonistas */
+.hero-open-viewport {
+  min-height: 290px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+/* Subgrid inferior del Hero Oscuro */
+.hero-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+  align-items: end;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(22, 22, 22, 0.58);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: 18px;
+}
+
+.hero-bio-col {
+  grid-column: 1 / 7;
+}
+
+.hero-bio-text {
+  font-family: var(--font-die-grotesk-b);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--color-fog);
+  max-width: 54ch;
+  margin-bottom: 12px;
+}
+
+.hero-sub-caption {
+  font-family: var(--font-die-grotesk-b);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-ash);
+  max-width: 58ch;
+}
+
+/* Controles de la escena de fondo 3D (Japanese Temple + Logos + Atmósfera) */
+.hero-controls-col {
+  grid-column: 7 / 13;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.control-strip-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.mono-strip-label {
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-ash);
+  margin-right: 4px;
+}
+
+/* Telemetría 3D en barra horizontal Ghost Glass */
+.telemetry-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* Loader discreto en esquina durante la carga del glTF */
+.stage-loader {
+  position: fixed;
+  bottom: 18px;
+  right: 24px;
+  z-index: 120;
+  background: var(--color-onyx);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: opacity 0.35s var(--ease-enter), visibility 0.35s var(--ease-enter);
+}
+
+.stage-loader.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-progress-track {
+  width: 90px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.loader-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--color-ember-orange);
+}
+
+.loader-text {
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-fog);
+}
+
+/* Panel flotante de Atmósfera (sk.md + hi.md) */
+.stage-atmosphere-panel {
+  position: fixed;
+  top: 78px;
+  right: 24px;
+  z-index: 130;
+  width: 280px;
+  background: var(--color-onyx);
+  border: 1px solid var(--color-silver-mist);
+  border-radius: var(--radius-sharp);
+  padding: 18px;
+  color: var(--color-fog);
+  display: none;
+}
+
+.stage-atmosphere-panel.open {
+  display: block;
+}
+
+.atmo-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(201, 199, 204, 0.2);
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.atmo-row {
+  margin-bottom: 12px;
+}
+
+.atmo-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-ash);
+  margin-bottom: 6px;
+}
+
+.atmo-slider {
+  width: 100%;
+  accent-color: var(--color-ember-orange);
+  height: 3px;
+}
+
+.atmo-swatches {
+  display: flex;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   TRANSICIÓN DE HORIZONTE Y SECCIONES CLARAS MONOCROMAS (Paper #f8f8f8 / Fog #f1f1f1)
+   Semi-translúcidas para mantener el Japanese Temple y los 10 logos 3D de fondo
+   ========================================================================== */
+.horizon-divider {
+  height: 4px;
+  width: 100%;
+  background: var(--gradient-horizon);
+}
+
+.light-paper-surface {
+  background-color: rgba(248, 248, 248, 0.78);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  color: var(--color-graphite);
+  padding: 72px 0;
+  border-bottom: 1px solid var(--color-silver-mist);
+}
+
+.light-fog-surface {
+  background-color: rgba(241, 241, 241, 0.74);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  color: var(--color-graphite);
+  padding: 72px 0;
+  border-bottom: 1px solid var(--color-silver-mist);
+}
+
+/* Ghosted Section Title — hi.md lines 162-166 (96px+ uppercase white on fog/paper) */
+.section-opener {
+  position: relative;
+  margin-bottom: 48px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-silver-mist);
+}
+
+.ghosted-watermark {
+  font-family: var(--font-abc-gravity-variable);
+  font-size: clamp(3.6rem, 8.5vw, 7.2rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 0.74;
+  letter-spacing: -0.01em;
+  color: var(--color-pure-white);
+  text-shadow: 0 0 1px rgba(60, 58, 62, 0.14);
+  user-select: none;
+  margin-bottom: 12px;
+}
+
+.section-header-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.section-meta-col {
+  grid-column: 1 / 4;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-stone);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title-col {
+  grid-column: 4 / 13;
+}
+
+/* Die Grotesk B 36px–60px weight 500, letter-spacing -0.03em — hi.md l.170, l.176 */
+.grotesk-heading {
+  font-family: var(--font-die-grotesk-b);
+  font-size: clamp(2rem, 3.8vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--color-graphite);
+}
+
+/* ==========================================================================
+   BRAND / TECH LOGO STRIP CON DIVISORES SESGADOS (hi.md lines 122-126, 228)
+   ========================================================================== */
+.tech-logo-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid var(--color-silver-mist);
+  border-radius: var(--radius-sharp);
+  margin-bottom: 48px;
+}
+
+.tech-strip-cell {
+  padding: 14px 14px 18px;
+  border-right: 1px solid var(--color-silver-mist);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s var(--ease-enter);
+}
+
+.tech-strip-cell:last-child {
+  border-right: none;
+}
+
+.tech-strip-cell:hover,
+.tech-strip-cell.active {
+  background: var(--color-pure-white);
+}
+
+.tech-strip-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-stone);
+}
+
+.tech-strip-name {
+  font-family: var(--font-die-grotesk-b);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--color-graphite);
+  letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   FILAS DE CAPACIDADES & RECTANGULAR ONYX SKILL TAGS (hi.md l.127-131)
+   ========================================================================== */
+.section-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+}
+
+.section-sidebar {
+  grid-column: 1 / 4;
+  padding-right: 12px;
+}
+
+.sidebar-note {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--color-stone);
+  margin-bottom: 18px;
+}
+
+.bg-logos-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Pill Nav Buttons en superficie clara — hi.md l.110 */
+.pill-light-btn {
+  text-align: left;
+  background: transparent;
+  border: 1px solid rgba(60, 58, 62, 0.2);
+  border-radius: var(--radius-pill);
+  padding: 7px 12px;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--color-graphite);
+  cursor: pointer;
+  transition: all 0.3s var(--ease-enter);
+}
+
+.pill-light-btn:hover,
+.pill-light-btn.active {
+  background: var(--color-onyx);
+  color: var(--color-fog);
+  border-color: var(--color-onyx);
+}
+
+.section-main-col {
+  grid-column: 4 / 13;
+}
+
+.capability-rows {
+  border-top: 1px solid var(--color-silver-mist);
+}
+
+.capability-row {
+  display: grid;
+  grid-template-columns: 3.5fr 4.5fr 4fr;
+  gap: 18px;
+  padding: 24px 12px;
+  border-bottom: 1px solid var(--color-silver-mist);
+  background: rgba(255, 255, 255, 0.52);
+  border-radius: var(--radius-sharp);
+  transition: background-color 0.3s var(--ease-enter);
+}
+
+.capability-row:hover {
+  background: var(--color-pure-white);
+}
+
+.cap-domain {
+  font-family: var(--font-die-grotesk-b);
+  font-size: 23px;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--color-graphite);
+}
+
+.cap-focus-tag {
+  display: block;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--color-stone);
+  margin-top: 6px;
+}
+
+.cap-description {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--color-stone);
+}
+
+/* Rectangular Onyx Skill Tags — hi.md lines 127-131, 224 */
+.onyx-tag-cloud {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
+}
+
+.onyx-tag {
+  background-color: var(--color-onyx);
+  color: var(--color-fog);
+  border-radius: var(--radius-sharp);
+  padding: 2px 6px;
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+/* ==========================================================================
+   PROJECT / PBR CARDS SIN SOMBRA Y ESQUINAS RECTAS 0PX (hi.md lines 117-121, 222)
+   ========================================================================== */
+.pbr-maps-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.pbr-map-item {
+  background: var(--color-pure-white);
+  border: 1px solid var(--color-silver-mist);
+  border-radius: var(--radius-sharp);
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease-enter);
+}
+
+.pbr-map-item:hover {
+  border-color: var(--color-onyx);
+}
+
+.pbr-map-frame {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--color-onyx);
+  border-radius: var(--radius-sharp);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.pbr-map-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s var(--ease-enter);
+}
+
+.pbr-map-item:hover .pbr-map-frame img {
+  transform: scale(1.04);
+}
+
+.pbr-map-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--color-graphite);
+  margin-bottom: 6px;
+}
+
+.pbr-map-caption {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-stone);
+}
+
+/* ==========================================================================
+   SISTEMAS Y CONTACTO (0px radius inputs, hairline dividers)
+   ========================================================================== */
+.system-entry {
+  display: grid;
+  grid-template-columns: 3.5fr 5fr 3.5fr;
+  gap: 18px;
+  padding: 24px 12px;
+  border-bottom: 1px solid var(--color-silver-mist);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.system-entry:first-of-type {
+  border-top: 1px solid var(--color-silver-mist);
+}
+
+.system-title {
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-graphite);
+  margin-bottom: 6px;
+}
+
+.system-narrative {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-stone);
+}
+
+.contact-split {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 24px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid var(--color-silver-mist);
+  padding: 24px;
+}
+
+.contact-direct-list {
+  list-style: none;
+  margin-top: 18px;
+  border-top: 1px solid var(--color-silver-mist);
+}
+
+.contact-direct-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-silver-mist);
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.contact-direct-list a {
+  color: var(--color-graphite);
+  text-decoration: underline;
+}
+
+.editorial-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editorial-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-wrap label {
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-graphite);
+}
+
+/* Inputs con border-radius: 0px — hi.md line 94 */
+.field-input {
+  padding: 10px 12px;
+  background: var(--color-pure-white);
+  border: 1px solid var(--color-silver-mist);
+  border-radius: var(--radius-sharp);
+  color: var(--color-graphite);
+  font-family: var(--font-die-grotesk-b);
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: var(--color-onyx);
+}
+
+textarea.field-input {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.form-status {
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-onyx);
+  min-height: 18px;
+}
+
+.editorial-footer {
+  padding: 24px 0;
+  background: var(--color-onyx);
+  color: var(--color-ash);
+  border-top: 1px solid rgba(201, 199, 204, 0.2);
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.footer-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.editorial-footer a {
+  color: var(--color-fog);
+}
+
+/* Modal PBR con esquinas rectas 0px */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(22, 22, 22, 0.82);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease-enter), visibility 0.3s var(--ease-enter);
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-sheet {
+  max-width: 720px;
+  width: 100%;
+  background: var(--color-pure-white);
+  border: 1px solid var(--color-silver-mist);
+  border-radius: var(--radius-sharp);
+  padding: 24px;
+}
+
+.modal-sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-silver-mist);
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.modal-img-preview {
+  width: 100%;
+  max-height: 440px;
+  object-fit: contain;
+  background: var(--color-onyx);
+  margin: 16px 0;
+  display: block;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .header-brand { grid-column: 1 / 7; }
+  .header-status-cell { display: none; }
+  .header-nav-cell { grid-column: 7 / 13; }
+
+  .hero-bio-col,
+  .hero-controls-col,
+  .section-meta-col,
+  .section-title-col,
+  .section-sidebar,
+  .section-main-col {
+    grid-column: 1 / 13;
+  }
+
+  .hero-controls-col {
+    align-items: flex-start;
+  }
+
+  .tech-logo-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .capability-row,
+  .system-entry,
+  .contact-split,
+  .pbr-maps-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-brand { grid-column: 1 / 13; }
+  .header-nav-cell { grid-column: 1 / 13; justify-content: flex-start; }
+  .editorial-form-row { grid-template-columns: 1fr; }
+}
