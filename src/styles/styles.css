@@ -23,9 +23,9 @@
   --cosmic-blue: #7dd3fc;
 
   /* Tipografía Profesional */
-  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-display: var(--font-space-grotesk), 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: var(--font-plus-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Layout & Radios */
   --container-max: 1200px;
@@ -194,7 +194,6 @@ body {
 }
 
 body.inspect-3d-background .page-shell > main,
-body.inspect-3d-background .page-shell > footer,
 body.inspect-3d-background .chapter-rail {
   opacity: 0.06;
   pointer-events: none;
@@ -1018,7 +1017,7 @@ body.js-reveal-ready [data-reveal-delay='4'] {
   padding: clamp(1.6rem, 2.8vw, 2.3rem);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   gap: 1.2rem;
 }
 
@@ -1093,83 +1092,6 @@ body.js-reveal-ready [data-reveal-delay='4'] {
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 7px;
   padding: 4px 10px;
-}
-
-/* Strip integrado de mapas PBR del modelo */
-.pbr-inline-section {
-  padding-top: 1.15rem;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.pbr-inline-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  font-family: var(--font-mono);
-  font-size: 0.71rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
-}
-
-.pbr-inline-hint {
-  color: var(--text-muted);
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.pbr-thumb-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.pbr-thumb-card {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  padding: 0;
-  color: inherit;
-  transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
-}
-
-.pbr-thumb-card:hover {
-  border-color: var(--accent-border);
-  transform: translateY(-2px);
-}
-
-.pbr-thumb-card img {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  display: block;
-  background: #090b12;
-}
-
-.pbr-thumb-meta {
-  padding: 7px 9px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.pbr-thumb-meta strong {
-  font-family: var(--font-sans);
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.pbr-thumb-meta span {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--text-muted);
 }
 
 /* Proyectos 02 y 03 secundarios */
@@ -1418,57 +1340,16 @@ textarea.field-input {
   color: var(--accent);
 }
 
-/* ==========================================================================
-   FOOTER CON ATRIBUCIONES CC-BY-4.0
-   ========================================================================== */
-.site-footer {
-  background: rgba(5, 7, 13, 0.82);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid var(--border-subtle);
-  padding: 24px 0;
-  font-family: var(--font-mono);
-  font-size: 0.73rem;
-  color: var(--text-muted);
+.form-status.is-success {
+  color: #4ade80;
 }
 
-.footer-inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px 24px;
-}
-
-.footer-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--text-secondary);
-}
-
-.footer-credits {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.footer-credits a {
-  color: var(--text-secondary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.footer-credits a:hover {
-  color: var(--text-primary);
-}
-
-.credit-divider {
-  opacity: 0.35;
+.form-status.is-error {
+  color: #f87171;
 }
 
 /* ==========================================================================
-   ELEMENTOS FLOTANTES: LOADER, DRAWER ATMÓSFERA, DOCK 3D, MODAL PBR
+   ELEMENTOS FLOTANTES: LOADER, DRAWER ATMÓSFERA, DOCK 3D
    ========================================================================== */
 .stage-loader {
   position: fixed;
@@ -1547,67 +1428,6 @@ body.inspect-3d-background .floating-orbit-dock {
   white-space: nowrap;
 }
 
-/* Modal PBR */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 250;
-  background: rgba(4, 6, 12, 0.84);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.28s ease, visibility 0.28s ease;
-}
-
-.modal-backdrop.open {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-sheet {
-  max-width: 740px;
-  width: 100%;
-  background: #0d111e;
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-lg);
-  padding: 22px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
-}
-
-.modal-sheet-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border-subtle);
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.modal-img-preview {
-  width: 100%;
-  max-height: 440px;
-  object-fit: contain;
-  background: #06080f;
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  margin: 16px 0;
-  display: block;
-}
-
-.modal-desc {
-  font-size: 0.92rem;
-  line-height: 1.65;
-  color: var(--text-secondary);
-}
-
 /* ==========================================================================
    DISEÑO RESPONSIVO (TABLET & MÓVIL)
    ========================================================================== */
@@ -1682,10 +1502,6 @@ body.inspect-3d-background .floating-orbit-dock {
 
   .demo-stage-viewport {
     min-height: 330px;
-  }
-
-  .pbr-thumb-grid {
-    grid-template-columns: 1fr;
   }
 
   .dock-hint {

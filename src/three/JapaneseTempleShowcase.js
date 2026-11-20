@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * JAPANESE TEMPLE INTERACTIVE 3D PROJECT SHOWCASE — `temple-showcase.js`
+ * JAPANESE TEMPLE INTERACTIVE 3D PROJECT SHOWCASE — `JapaneseTempleShowcase.js`
  * Visor WebGL dedicado e independiente montado dentro del cuadro demostrativo
  * del proyecto "Japanese Shrine" (`#japanese-project-canvas`).
  * - OrbitControls directos sin secuestrar el scroll vertical de la página
@@ -10,13 +10,23 @@
  */
 
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class JapaneseTempleShowcase {
-  constructor(canvasId = 'japanese-project-canvas') {
-    this.canvas = document.getElementById(canvasId);
+  constructor(canvas, options = {}) {
+    this.canvas = typeof canvas === 'string' ? document.getElementById(canvas) : canvas;
     if (!this.canvas) return;
+
+    this.modelUrl = options.modelUrl || '/scene.gltf';
+    this.onLoadProgress = options.onLoadProgress || null;
+    this.onLoadComplete = options.onLoadComplete || null;
+    this.onTelemetryUpdate = options.onTelemetryUpdate || null;
+
+    this._disposed = false;
+    this._rafId = null;
+    this._hideTimer = null;
+    this._boundWindowResize = () => this._handleResize();
 
     this.container = this.canvas.parentElement;
     this.meshes = [];
@@ -30,9 +40,9 @@ export class JapaneseTempleShowcase {
     this.isVisible = true;
 
     this.stats = {
-      vertices: 33629,
-      triangles: 29696,
-      fps: 60
+      vertices: options.initialVertices || 33629,
+      triangles: options.initialTriangles || 29696,
+      fps: 60,
     };
     this._frameCount = 0;
     this._lastFpsUpdate = performance.now();
@@ -54,7 +64,7 @@ export class JapaneseTempleShowcase {
       : { width: 720, height: 460 };
     return {
       width: Math.max(260, Math.round(rect.width) || 720),
-      height: Math.max(260, Math.round(rect.height) || 460)
+      height: Math.max(260, Math.round(rect.height) || 460),
     };
   }
 
@@ -73,7 +83,7 @@ export class JapaneseTempleShowcase {
       canvas: this.canvas,
       antialias: true,
       alpha: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
     });
     this.renderer.setSize(width, height, false);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -124,7 +134,7 @@ export class JapaneseTempleShowcase {
     const discMat = new THREE.MeshStandardMaterial({
       color: 0x121521,
       roughness: 0.42,
-      metalness: 0.58
+      metalness: 0.58,
     });
     const discMesh = new THREE.Mesh(discGeo, discMat);
     discMesh.receiveShadow = true;
@@ -136,7 +146,7 @@ export class JapaneseTempleShowcase {
       color: 0xff6b3d,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.72
+      opacity: 0.72,
     });
     const ringMesh = new THREE.Mesh(ringGeo, this.ringMat);
     ringMesh.position.y = 0.036;
@@ -164,14 +174,35 @@ export class JapaneseTempleShowcase {
     this.controls.update();
   }
 
+  _disposeObject3D(root) {
+    if (!root) return;
+    root.traverse((child) => {
+      if (child.geometry) {
+        child.geometry.dispose();
+      }
+      if (child.material) {
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((mat) => {
+          ['map', 'normalMap', 'metalnessMap', 'roughnessMap', 'aoMap'].forEach((k) => {
+            if (mat[k]) mat[k].dispose();
+          });
+          mat.dispose();
+        });
+      }
+    });
+  }
+
   _loadModel() {
     const loader = new GLTFLoader();
-    const loaderEl = document.getElementById('temple-loader');
-    const loaderBar = document.getElementById('temple-loader-bar');
 
     loader.load(
-      './scene.gltf',
+      this.modelUrl,
       (gltf) => {
+        if (this._disposed) {
+          this._disposeObject3D(gltf.scene);
+          return;
+        }
+
         const model = gltf.scene;
 
         model.updateMatrixWorld(true);
@@ -226,27 +257,39 @@ export class JapaneseTempleShowcase {
           }
         });
 
-        this.stats.vertices = totalVertices;
-        this.stats.triangles = totalTriangles;
-        this._updateTelemetryDOM();
+        this.stats.vertices = totalVertices || this.stats.vertices;
+        this.stats.triangles = totalTriangles || this.stats.triangles;
+        this._emitTelemetry();
 
         this.pivotGroup.add(model);
         this.model = model;
 
-        if (loaderBar) loaderBar.style.width = '100%';
-        setTimeout(() => {
-          if (loaderEl) loaderEl.classList.add('hidden');
+        if (this.renderMode !== 'pbr') {
+          this.setRenderMode(this.renderMode);
+        }
+
+        if (this.onLoadProgress) {
+          this.onLoadProgress(100);
+        }
+        this._hideTimer = setTimeout(() => {
+          if (!this._disposed && this.onLoadComplete) {
+            this.onLoadComplete();
+          }
         }, 240);
       },
       (xhr) => {
-        if (xhr.lengthComputable && loaderBar) {
+        if (this._disposed) return;
+        if (xhr.lengthComputable && this.onLoadProgress) {
           const pct = Math.min(99, Math.round((xhr.loaded / xhr.total) * 100));
-          loaderBar.style.width = `${pct}%`;
+          this.onLoadProgress(pct);
         }
       },
       (error) => {
-        console.error('Error cargando Japanese Temple (./scene.gltf):', error);
-        if (loaderEl) loaderEl.classList.add('hidden');
+        if (this._disposed) return;
+        console.error(`Error cargando Japanese Temple (${this.modelUrl}):`, error);
+        if (this.onLoadComplete) {
+          this.onLoadComplete();
+        }
       }
     );
   }
@@ -258,20 +301,20 @@ export class JapaneseTempleShowcase {
     const presets = {
       hero: {
         pos: new THREE.Vector3(3.85 * distScale, 1.35 * distScale, 4.75 * distScale),
-        target: new THREE.Vector3(0, 0.1, 0)
+        target: new THREE.Vector3(0, 0.1, 0),
       },
       dome: {
         pos: new THREE.Vector3(2.05 * distScale, 1.78, 2.25 * distScale),
-        target: new THREE.Vector3(0, 0.8, 0)
+        target: new THREE.Vector3(0, 0.8, 0),
       },
       portico: {
         pos: new THREE.Vector3(0.22, -0.58, 3.25 * distScale),
-        target: new THREE.Vector3(0, -0.05, 0)
+        target: new THREE.Vector3(0, -0.05, 0),
       },
       top: {
         pos: new THREE.Vector3(2.65 * distScale, 4.45 * distScale, 2.65 * distScale),
-        target: new THREE.Vector3(0, 0.0, 0)
-      }
+        target: new THREE.Vector3(0, 0.0, 0),
+      },
     };
 
     return presets[presetName] || presets.hero;
@@ -286,12 +329,11 @@ export class JapaneseTempleShowcase {
       startTarget: this.controls.target.clone(),
       endTarget: chosen.target,
       startTime: performance.now(),
-      duration: 780
+      duration: 780,
     };
   }
 
   zoomStep(direction = 1) {
-    // direction: -1 acercar, +1 alejar
     const offset = this.camera.position.clone().sub(this.controls.target);
     const currentDist = offset.length();
     const targetDist = THREE.MathUtils.clamp(
@@ -308,7 +350,7 @@ export class JapaneseTempleShowcase {
       startTarget: this.controls.target.clone(),
       endTarget: this.controls.target.clone(),
       startTime: performance.now(),
-      duration: 380
+      duration: 380,
     };
   }
 
@@ -323,16 +365,20 @@ export class JapaneseTempleShowcase {
   setRenderMode(mode) {
     this.renderMode = mode;
 
+    // Limpiar solo los materiales del overlay wireframe sin destruir la geometría compartida del templo
     this.wireframeOverlays.forEach((ov) => {
       if (ov.parent) ov.parent.remove(ov);
-      ov.geometry.dispose();
-      ov.material.dispose();
+      if (ov.material) ov.material.dispose();
     });
     this.wireframeOverlays = [];
 
     this.meshes.forEach((mesh) => {
       const origMat = this.originalMaterials.get(mesh.uuid);
       if (!origMat) return;
+
+      if (mesh.material && mesh.material !== origMat) {
+        mesh.material.dispose();
+      }
 
       if (mode === 'pbr') {
         mesh.material = origMat.clone();
@@ -343,7 +389,7 @@ export class JapaneseTempleShowcase {
           metalness: 0.3,
           polygonOffset: true,
           polygonOffsetFactor: 1,
-          polygonOffsetUnits: 1
+          polygonOffsetUnits: 1,
         });
         mesh.material = darkCore;
 
@@ -351,7 +397,7 @@ export class JapaneseTempleShowcase {
           color: this.rimLight.color.getHex(),
           wireframe: true,
           transparent: true,
-          opacity: 0.52
+          opacity: 0.52,
         });
         const wireMesh = new THREE.Mesh(mesh.geometry, wireMat);
         mesh.add(wireMesh);
@@ -362,7 +408,7 @@ export class JapaneseTempleShowcase {
           roughness: 0.42,
           metalness: 0.14,
           normalMap: origMat.normalMap || null,
-          roughnessMap: origMat.roughnessMap || null
+          roughnessMap: origMat.roughnessMap || null,
         });
         mesh.material = clayMat;
       }
@@ -389,16 +435,18 @@ export class JapaneseTempleShowcase {
     return this.nightLighting;
   }
 
-  _updateTelemetryDOM() {
-    const vertEl = document.getElementById('temple-vertices');
-    const triEl = document.getElementById('temple-triangles');
-    const fpsEl = document.getElementById('temple-fps');
-    if (vertEl) vertEl.textContent = this.stats.vertices.toLocaleString('es-ES');
-    if (triEl) triEl.textContent = this.stats.triangles.toLocaleString('es-ES');
-    if (fpsEl) fpsEl.textContent = `${this.stats.fps} FPS`;
+  _emitTelemetry() {
+    if (this.onTelemetryUpdate) {
+      this.onTelemetryUpdate({
+        vertices: this.stats.vertices,
+        triangles: this.stats.triangles,
+        fps: this.stats.fps,
+      });
+    }
   }
 
   _handleResize() {
+    if (this._disposed) return;
     const { width, height } = this._getContainerSize();
     if (width === this.width && height === this.height) return;
     this.width = width;
@@ -413,10 +461,9 @@ export class JapaneseTempleShowcase {
       this._resizeObserver = new ResizeObserver(() => this._handleResize());
       this._resizeObserver.observe(this.container);
     } else {
-      window.addEventListener('resize', () => this._handleResize());
+      window.addEventListener('resize', this._boundWindowResize);
     }
 
-    // Pausar renderizado del visor cuando el cuadro del proyecto no es visible en pantalla
     if (typeof IntersectionObserver !== 'undefined' && this.container) {
       this._intersectionObserver = new IntersectionObserver(
         (entries) => {
@@ -432,7 +479,8 @@ export class JapaneseTempleShowcase {
 
   _animate() {
     const tick = (now) => {
-      requestAnimationFrame(tick);
+      if (this._disposed) return;
+      this._rafId = requestAnimationFrame(tick);
       if (!this.isVisible) return;
 
       const t = (now - this.startTime) * 0.001;
@@ -445,8 +493,7 @@ export class JapaneseTempleShowcase {
         );
         this._frameCount = 0;
         this._lastFpsUpdate = now;
-        const fpsEl = document.getElementById('temple-fps');
-        if (fpsEl) fpsEl.textContent = `${this.stats.fps} FPS`;
+        this._emitTelemetry();
       }
 
       if (this.cameraTransition) {
@@ -478,6 +525,52 @@ export class JapaneseTempleShowcase {
 
       this.renderer.render(this.scene, this.camera);
     };
-    requestAnimationFrame(tick);
+
+    this._rafId = requestAnimationFrame(tick);
+  }
+
+  destroy() {
+    this._disposed = true;
+    if (this._rafId !== null) {
+      cancelAnimationFrame(this._rafId);
+      this._rafId = null;
+    }
+    if (this._hideTimer) {
+      clearTimeout(this._hideTimer);
+      this._hideTimer = null;
+    }
+
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+    } else {
+      window.removeEventListener('resize', this._boundWindowResize);
+    }
+    if (this._intersectionObserver) {
+      this._intersectionObserver.disconnect();
+    }
+
+    this.wireframeOverlays.forEach((ov) => {
+      if (ov.parent) ov.parent.remove(ov);
+      if (ov.material) ov.material.dispose();
+    });
+    this.wireframeOverlays = [];
+
+    this.originalMaterials.forEach((mat) => {
+      ['map', 'normalMap', 'metalnessMap', 'roughnessMap', 'aoMap'].forEach((k) => {
+        if (mat[k]) mat[k].dispose();
+      });
+      mat.dispose();
+    });
+    this.originalMaterials.clear();
+
+    if (this.controls) {
+      this.controls.dispose();
+    }
+    if (this.scene) {
+      this._disposeObject3D(this.scene);
+    }
+    if (this.renderer) {
+      this.renderer.dispose();
+    }
   }
 }
