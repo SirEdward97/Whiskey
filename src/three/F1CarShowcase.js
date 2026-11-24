@@ -670,22 +670,31 @@ export class F1CarShowcase {
       }
 
       if (this.airflowEnabled && this.airflowStreams.length > 0) {
-        const isModeX = this.aeroMode === 'X';
-        const speed = isModeX ? 0.68 : 0.36;
-        for (let s = 0; s < this.airflowStreams.length; s++) {
-          const stream = this.airflowStreams[s];
-          stream.phase = (stream.phase + dt * speed) % 1;
-          const posAttr = stream.pulseLine.geometry.attributes.position;
-          for (let i = 0; i < stream.pulseLength; i++) {
-            const u = (stream.phase + i * 0.0085) % 1;
-            const pt = stream.curve.getPointAt(u);
-            const dropX = isModeX && u > 0.55 ? (u - 0.55) * 0.22 : 0;
-            posAttr.setXYZ(i, pt.x, pt.y - dropX, pt.z);
-          }
-          posAttr.needsUpdate = true;
-        }
-      }
+  const isModeX = this.aeroMode === 'X';
+  const speed = isModeX ? 0.68 : 0.36;
+  const safeDt = Number.isFinite(dt) && dt > 0 ? Math.min(dt, 0.1) : 0;
 
+  for (let s = 0; s < this.airflowStreams.length; s++) {
+    const stream = this.airflowStreams[s];
+    if (!stream?.curve) continue;
+
+    stream.phase = (stream.phase + safeDt * speed) % 1;
+    const posAttr = stream.pulseLine.geometry.attributes.position;
+
+    for (let i = 0; i < stream.pulseLength; i++) {
+      const rawU = (stream.phase + i * 0.0085) % 1;
+      const u = Math.max(0, Math.min(0.999999, rawU < 0 ? rawU + 1 : rawU));
+      const pt = stream.curve.getPointAt(u);
+
+      if (!pt) continue;
+
+      const dropX = isModeX && u > 0.55 ? (u - 0.55) * 0.22 : 0;
+      posAttr.setXYZ(i, pt.x, pt.y - dropX, pt.z);
+    }
+
+    posAttr.needsUpdate = true;
+  }
+}
       if (this.controls) {
         this.controls.update();
       }
