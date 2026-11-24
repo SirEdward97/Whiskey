@@ -23,9 +23,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: 'Edwar Granados (@SirEdward97) — Full-Stack & 3D Interactive Developer',
+  title: 'Edwar Granados (@SirEdward97) — Diseñador Web & Desarrollador 3D Interactivo',
   description:
-    'Portafolio profesional de Edwar Granados (@SirEdward97). Desarrollo de software Full-Stack con Next.js y React, interfaces interactivas 3D con Three.js, Flutter, Python (Django, FastAPI), Node.js (Express), GraphQL, bases de datos, Docker y flujos con IA.',
+    'Portafolio profesional de Edwar Granados (@SirEdward97). Diseño web y desarrollo Frontend con Next.js, React y Tailwind CSS, especializado en interfaces interactivas 3D con Three.js, aplicaciones multiplataforma en Flutter e integración con APIs (Node.js, Python), Docker y flujos con IA.'
 };
 
 export default function RootLayout({ children }) {

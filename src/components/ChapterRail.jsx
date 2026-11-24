@@ -2,8 +2,7 @@ const CHAPTERS = [
   { id: 'inicio', title: 'Inicio', label: '01 Inicio' },
   { id: 'perfil', title: 'Perfil', label: '02 Perfil' },
   { id: 'proyectos', title: 'Proyectos', label: '03 Proyectos' },
-  { id: 'stack', title: 'Stack 3D', label: '04 Stack' },
-  { id: 'contacto', title: 'Contacto', label: '05 Contacto' },
+  { id: 'contacto', title: 'Contacto', label: '04 Contacto' },
 ];
 
 export default function ChapterRail({ activeSection }) {

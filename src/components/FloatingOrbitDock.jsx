@@ -5,7 +5,7 @@ export default function FloatingOrbitDock({ onExitOrbit }) {
       id="floating-orbit-dock"
       aria-label="Modo exploración 3D de la galaxia"
     >
-      <span className="dock-hint">Arrastra para orbitar · Rueda / pellizco para zoom</span>
+      <span className="dock-hint">Arrastra para orbitar </span>
       <button
         type="button"
         className="chip-btn chip-accent"

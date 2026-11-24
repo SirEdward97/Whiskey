@@ -1,9 +1,10 @@
 # Dependencies
 node_modules/
 
-# Next.js build outputs
+# Next.js & Vercel build outputs
 .next/
 out/
+.vercel/
 
 # Runtime data & env
 .env

@@ -58,7 +58,7 @@ export default function ContactSection({ contact }) {
       <div className="container">
         <Reveal as="header" className="section-head">
           <div className="section-eyebrow">
-            <span className="eyebrow-index">04</span>
+            <span className="eyebrow-index">03</span>
             <span className="eyebrow-sep">/</span>
             <span>Contacto</span>
           </div>

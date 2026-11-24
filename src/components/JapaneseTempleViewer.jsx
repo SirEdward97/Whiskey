@@ -104,6 +104,7 @@ export default function JapaneseTempleViewer({ model3d }) {
       <div className="demo-stage-viewport">
         <canvas
           id="japanese-project-canvas"
+          className="demo-stage-canvas"
           ref={canvasRef}
           aria-label="Visor 3D interactivo del proyecto Japanese Shrine"
         />

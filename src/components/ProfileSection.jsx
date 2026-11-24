@@ -11,7 +11,8 @@ export default function ProfileSection({ profile }) {
             <span>Perfil profesional</span>
           </div>
           <h2 className="section-title">
-            Ingeniería Full-Stack orientada al producto, el rendimiento y la claridad visual.
+            Tecnólogo en Diseño Web & Desarrollo Frontend
+            Interfaces modernas y experiencias 3D enfocadas en rendimiento y claridad visual.
           </h2>
         </Reveal>
 

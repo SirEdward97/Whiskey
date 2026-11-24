@@ -4,9 +4,9 @@
   "description": "Portafolio Full-Stack & 3D de Edwar Granados (@SirEdward97) — Next.js, React.js y Three.js",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 9797",
     "build": "next build",
-    "start": "next start"
+    "start": "next start -p 9797"
   },
   "author": "Edwar Granados (@SirEdward97)",
   "license": "MIT",

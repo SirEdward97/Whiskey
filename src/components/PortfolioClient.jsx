@@ -10,15 +10,13 @@ import HeroSection from './HeroSection';
 import ProfileSection from './ProfileSection';
 import ProjectsSection from './ProjectsSection';
 import ScrollProgressBar from './ScrollProgressBar';
-import StackSection from './StackSection';
 import StageLoader from './StageLoader';
 
 export default function PortfolioClient({ initialPortfolio }) {
   const [portfolio] = useState(initialPortfolio);
   const [activeSection, setActiveSection] = useState('inicio');
   const [orbitMode, setOrbitMode] = useState(false);
-  const [pinnedDomain, setPinnedDomain] = useState(null);
-  const [hoveredDomain, setHoveredDomain] = useState(null);
+  const [theme, setTheme] = useState('dark');
 
   const [galaxyLoader, setGalaxyLoader] = useState({
     progress: 0,
@@ -46,6 +44,14 @@ export default function PortfolioClient({ initialPortfolio }) {
       document.body.classList.remove('inspect-3d-background');
     };
   }, [orbitMode]);
+
+  // Sincronizar tema visual (oscuro / claro) en body
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+    return () => {
+      document.body.removeAttribute('data-theme');
+    };
+  }, [theme]);
 
   // Sincronizar capítulos activos (Header + Rail lateral) con IntersectionObserver
   useEffect(() => {
@@ -95,14 +101,12 @@ export default function PortfolioClient({ initialPortfolio }) {
     setGalaxyStats(stats);
   }, []);
 
-  const effectiveHighlightDomain = hoveredDomain || pinnedDomain;
-
   return (
     <>
       <GalaxyBackgroundCanvas
         logosManifest={portfolio.logos3d}
         orbitMode={orbitMode}
-        highlightDomain={effectiveHighlightDomain}
+        highlightDomain={null}
         onLoadProgress={handleLoadProgress}
         onLoadComplete={handleLoadComplete}
         onTelemetryUpdate={handleTelemetryUpdate}
@@ -124,6 +128,8 @@ export default function PortfolioClient({ initialPortfolio }) {
           activeSection={activeSection}
           orbitMode={orbitMode}
           onToggleOrbit={() => setOrbitMode((prev) => !prev)}
+          theme={theme}
+          onToggleTheme={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
         />
 
         <main>
@@ -136,14 +142,6 @@ export default function PortfolioClient({ initialPortfolio }) {
           <ProfileSection profile={portfolio.profile} />
 
           <ProjectsSection projects={portfolio.projects} />
-
-          <StackSection
-            stackFilters={portfolio.stackFilters}
-            capabilities={portfolio.capabilities}
-            pinnedDomain={pinnedDomain}
-            onSelectDomain={(domain) => setPinnedDomain(domain)}
-            onHoverDomain={(domain) => setHoveredDomain(domain)}
-          />
 
           <ContactSection contact={portfolio.contact} />
         </main>

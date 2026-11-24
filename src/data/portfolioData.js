@@ -2,8 +2,8 @@ export const PORTFOLIO_DATA = {
   profile: {
     name: 'Edwar Granados',
     handle: '@SirEdward97',
-    availabilityPill: 'Disponible para proyectos · Full-Stack & Interactive 3D',
-    role: 'Desarrollador Full-Stack & Experiencias Interactivas 3D',
+    availabilityPill: 'Disponible para proyectos · React, Three.js & Web 3D',
+    role: 'Desarrollador Frontend · React & Experiencias 3D con Three.js',
     summary:
       'Diseño y construyo aplicaciones web de alto rendimiento con Next.js y React, arquitecturas escalables en Python y Node.js, flujos automatizados con inteligencia artificial y entornos 3D en tiempo real con Three.js y WebGL.',
     githubUrl: 'https://github.com/SirEdward97',
@@ -26,21 +26,21 @@ export const PORTFOLIO_DATA = {
     pillars: [
       {
         index: '01',
-        title: 'Desarrollo Full-Stack & APIs',
+        title: 'Diseño Web & Desarrollo Frontend',
         description:
-          'Arquitecturas modernas con Next.js, React, FastAPI, Django, Express y GraphQL respaldadas por PostgreSQL, MySQL, MongoDB y Supabase.',
+          'Creación de interfaces modernas, responsivas y centradas en la claridad visual utilizando HTML5, CSS3, Bootstrap, EJS y React / Next.js, priorizando la experiencia de usuario (UI/UX) y el rendimiento en cada vista.',
       },
       {
         index: '02',
-        title: 'Gráficos 3D Interactivos en la Web',
+        title: 'Gráficos 3D Interactivos & Modelado Web',
         description:
-          'Escenas WebGL optimizadas a 60 FPS en Three.js, pipelines glTF/GLB, materiales PBR, cámaras coreografiadas con scroll y controles táctiles.',
+          'Desarrollo de experiencias visuales en el navegador con Three.js y modelado 3D, optimizando escenas WebGL con activos glTF/GLB, iluminación, materiales PBR y animaciones interactivas sincronizadas con el usuario.',
       },
       {
         index: '03',
-        title: 'Integración de Flujos con IA & DevOps',
+        title: 'Integración Backend, Bases de Datos & IA',
         description:
-          'Orquestación de agentes y modelos de lenguaje en producción, despliegue con contenedores Docker y administración en servidores Linux (Ubuntu).',
+          'Conexión de interfaces con APIs y lógica de servidor en Node.js (Express) y Python (Django) —como en el desarrollo del sistema SIGIF—, gestión de datos con MongoDB y Supabase, contenedores Docker e integración de flujos con IA.',
       },
     ],
   },
@@ -62,6 +62,7 @@ export const PORTFOLIO_DATA = {
         'OrbitControls',
       ],
       featured: true,
+      viewerType: 'japanese-shrine',
       model3d: {
         modelUrl: '/scene.gltf',
         initialVertices: 33629,
@@ -69,23 +70,51 @@ export const PORTFOLIO_DATA = {
       },
     },
     {
-      slug: 'ai-workflow-orchestrator',
-      badge: 'Proyecto 02',
-      category: 'Backend Asíncrono & IA',
-      title: 'Orquestador de Flujos con IA & API Unificada',
+      slug: 'rb22-f1-3d',
+      badge: 'Proyecto 02 · Destacado',
+      category: 'WebGL / Three.js / Metrología FIA 2026',
+      title: 'Oracle Red Bull Racing RB22 — Banco de Homologación 3D',
       description:
-        'Arquitectura backend construida sobre FastAPI, Django y GraphQL para coordinar tareas automatizadas con modelos de lenguaje, persistencia transaccional en PostgreSQL/MySQL y almacenamiento documental en MongoDB.',
-      tags: ['Python', 'FastAPI', 'Django', 'GraphQL', 'PostgreSQL', 'MongoDB'],
-      featured: false,
+        'Visor interactivo en Three.js del monoplaza Oracle Red Bull Racing RB22 (normativa FIA 2026) en formato GLB binario con 27 grupos de malla PBR, plataforma de metrología a escala real (5400 × 1900 mm), simulación de flujo aerodinámico de túnel de viento en Modo Z y Modo X, seis estaciones de cámara calibradas y modos de inspección técnica en tiempo real.',
+      tags: [
+        'Next.js',
+        'React',
+        'Three.js',
+        'WebGL 2.0',
+        'GLB / PBR',
+        'Túnel de Viento 3D',
+        'OrbitControls',
+      ],
+      featured: true,
+      viewerType: 'f1-rb22',
+      model3d: {
+        modelUrl: '/f1/rb22.glb',
+        initialVertices: 222638,
+        initialTriangles: 281075,
+      },
     },
     {
-      slug: 'realtime-multiplatform',
+      slug: 'sigif-inventario-facturacion',
       badge: 'Proyecto 03',
-      category: 'Next.js, React, Flutter & DevOps',
-      title: 'Plataforma Multiplataforma en Tiempo Real',
+      category: 'Plataforma Web / Inventario & Facturación',
+      role: 'Diseño Web & Desarrollo Frontend (Proyecto Colaborativo)',
+      title: 'SIGIF — Sistema Integral de Gestión de Inventario y Facturación',
       description:
-        'Ecosistema cliente-servidor que integra aplicaciones en Flutter y clientes web en Next.js y React con APIs en Node.js/Express, suscripciones en vivo sobre Supabase y despliegues contenedorizados con Docker en servidores Linux (Ubuntu).',
-      tags: ['Next.js', 'React', 'Flutter', 'Node.js', 'Express', 'Supabase', 'Docker'],
+        'Desarrollo colaborativo de una plataforma web para la gestión de inventario, facturación, finanzas y control de alertas empresariales. Participé en el diseño e implementación de interfaces de usuario responsivas y funcionales, priorizando la claridad visual y la facilidad de uso en los módulos operativos, integrando la capa visual con servicios backend y despliegue continuo en Vercel.',
+      tags: [
+        'HTML5',
+        'CSS3',
+        'Bootstrap',
+        'JavaScript',
+        'Python (Django)',
+        'Node.js',
+        'MongoDB',
+        'Vercel',
+      ],
+      links: {
+        demo: 'https://sigif-final.vercel.app',
+        github: 'https://github.com/Machadodev1/sigif-final',
+      },
       featured: false,
     },
   ],
@@ -272,9 +301,9 @@ export const PORTFOLIO_DATA = {
   ],
   contact: {
     intro:
-      'Disponible para desarrollo Full-Stack con Next.js y React, experiencias interactivas 3D con Three.js, arquitecturas de APIs en Python y Node.js, e integración de flujos con inteligencia artificial.',
+      'Disponible para desarrollo Frontend con Next.js y React, experiencias interactivas 3D con Three.js, arquitecturas de APIs en Python y Node.js, e integración de flujos con inteligencia artificial.',
     developer: 'Edwar Granados',
-    profile: 'Tecnólogo Front-End & Full-Stack',
+    profile: 'Tecnólogo en Diseño Web & Desarrollo Frontend',
     githubUrl: 'https://github.com/SirEdward97',
     githubDisplay: 'github.com/SirEdward97 ↗',
     availability: 'Abierto a proyectos',
@@ -284,8 +313,8 @@ export const PORTFOLIO_DATA = {
         label: 'Full-Stack Web & Experiencias 3D (Next.js / React / Three.js)',
       },
       {
-        value: 'Backend & APIs (Next.js / Python FastAPI / Django / GraphQL)',
-        label: 'Backend & APIs (Next.js / Python / Node.js / GraphQL)',
+        value: 'Frontend & APIs (Next.js / Python FastAPI / Django )',
+        label: 'Frontend & APIs (Next.js / Python / Node.js  )',
       },
       {
         value: 'Integración de Flujos con IA',
