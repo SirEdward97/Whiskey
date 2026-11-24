@@ -11,8 +11,7 @@ export default function ProfileSection({ profile }) {
             <span>Perfil profesional</span>
           </div>
           <h2 className="section-title">
-            Tecnólogo en Diseño Web & Desarrollo Frontend
-            Interfaces modernas y experiencias 3D enfocadas en rendimiento y claridad visual.
+            Tecnólogo Frontend enfocado en diseño web y experiencias 3D
           </h2>
         </Reveal>
 
