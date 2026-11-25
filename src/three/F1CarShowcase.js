@@ -3,7 +3,7 @@
  * ORACLE RED BULL RACING RB22 3D PROJECT SHOWCASE — `F1CarShowcase.js`
  * Visor WebGL dedicado e independiente montado dentro del cuadro demostrativo
  * del proyecto "Oracle Red Bull Racing RB22" (`#f1-project-canvas`).
- * - Carga el modelo binario `/f1/rb22.glb` respetando escala real FIA 2026
+ * - Carga el modelo binario 4K `/f1/2026_redbull_rb22.glb` respetando escala real FIA 2026
  * - Plataforma de metrología FIA (5400 x 1900 mm) y estelas de túnel de viento
  * - 6 estaciones calibradas de cámara, aerodinámica activa Modo Z / Modo X,
  *   modos PBR / Wireframe / Relieve, luz Estudio / Nocturna y auto-pausa
@@ -12,16 +12,31 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-const EXPECTED_GLB_BYTES = 37469092;
+const EXPECTED_GLB_BYTES = 30730112;
+
+const TEXTURE_MAP_KEYS = [
+  'map',
+  'normalMap',
+  'metalnessMap',
+  'roughnessMap',
+  'aoMap',
+  'emissiveMap',
+  'clearcoatMap',
+  'clearcoatRoughnessMap',
+  'clearcoatNormalMap',
+  'specularIntensityMap',
+  'specularColorMap',
+];
 
 export class F1CarShowcase {
   constructor(canvas, options = {}) {
     this.canvas = typeof canvas === 'string' ? document.getElementById(canvas) : canvas;
     if (!this.canvas) return;
 
-    this.modelUrl = options.modelUrl || '/f1/rb22.glb';
+    this.modelUrl = options.modelUrl || '/f1/2026_redbull_rb22.glb';
     this.onLoadProgress = options.onLoadProgress || null;
     this.onLoadComplete = options.onLoadComplete || null;
     this.onTelemetryUpdate = options.onTelemetryUpdate || null;
@@ -29,6 +44,7 @@ export class F1CarShowcase {
     this._disposed = false;
     this._rafId = null;
     this._hideTimer = null;
+    this._envRenderTarget = null;
     this._boundWindowResize = () => this._handleResize();
 
     this.container = this.canvas.parentElement;
@@ -46,8 +62,8 @@ export class F1CarShowcase {
     this.isVisible = true;
 
     this.stats = {
-      vertices: options.initialVertices || 222638,
-      triangles: options.initialTriangles || 281075,
+      vertices: options.initialVertices || 219938,
+      triangles: options.initialTriangles || 280939,
       fps: 60,
     };
     this._frameCount = 0;
@@ -96,27 +112,35 @@ export class F1CarShowcase {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.22;
+    this.renderer.toneMappingExposure = 1.15;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    pmremGenerator.compileEquirectangularShader();
+    const roomEnv = new RoomEnvironment();
+    this._envRenderTarget = pmremGenerator.fromScene(roomEnv, 0.04);
+    this.scene.environment = this._envRenderTarget.texture;
+    roomEnv.dispose();
+    pmremGenerator.dispose();
 
     this.stageGroup = new THREE.Group();
     this.scene.add(this.stageGroup);
   }
 
   _initLights() {
-    this.hemiLight = new THREE.HemisphereLight(0xf4f8ff, 0x10182f, 1.65);
+    this.hemiLight = new THREE.HemisphereLight(0xf4f8ff, 0x10182f, 1.25);
     this.hemiLight.position.set(0, 12, 0);
     this.scene.add(this.hemiLight);
 
-    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.72);
+    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.48);
     this.scene.add(this.ambientLight);
 
-    this.keyLight = new THREE.DirectionalLight(0xfffaf2, 2.45);
+    this.keyLight = new THREE.DirectionalLight(0xfffaf2, 2.35);
     this.keyLight.position.set(5.5, 9.5, 6.8);
     this.keyLight.castShadow = true;
-    this.keyLight.shadow.mapSize.width = 1024;
-    this.keyLight.shadow.mapSize.height = 1024;
+    this.keyLight.shadow.mapSize.width = 2048;
+    this.keyLight.shadow.mapSize.height = 2048;
     this.keyLight.shadow.camera.near = 0.5;
     this.keyLight.shadow.camera.far = 26;
     const d = 4.2;
@@ -281,7 +305,7 @@ export class F1CarShowcase {
 
   _disposeMaterial(mat) {
     if (!mat) return;
-    ['map', 'normalMap', 'metalnessMap', 'roughnessMap', 'aoMap', 'emissiveMap'].forEach((k) => {
+    TEXTURE_MAP_KEYS.forEach((k) => {
       if (mat[k]) mat[k].dispose();
     });
     mat.dispose();
@@ -319,8 +343,16 @@ export class F1CarShowcase {
 
         model.traverse((child) => {
           if (child.isMesh) {
-            child.castShadow = true;
+            const rawMats = child.material
+              ? Array.isArray(child.material)
+                ? child.material
+                : [child.material]
+              : [];
+            const isTransparentDecal = rawMats.some((m) => m && m.transparent);
+
+            child.castShadow = !isTransparentDecal;
             child.receiveShadow = true;
+            child.userData.isTransparentDecal = isTransparentDecal;
             this.meshes.push(child);
 
             const geom = child.geometry;
@@ -336,21 +368,19 @@ export class F1CarShowcase {
 
             if (child.material) {
               const enhanceMat = (mat) => {
-                [
-                  'map',
-                  'normalMap',
-                  'metalnessMap',
-                  'roughnessMap',
-                  'aoMap',
-                  'emissiveMap',
-                ].forEach((k) => {
+                TEXTURE_MAP_KEYS.forEach((k) => {
                   if (mat[k]) {
                     mat[k].anisotropy = maxAnisotropy;
                     mat[k].needsUpdate = true;
                   }
                 });
                 if (typeof mat.envMapIntensity === 'number') {
-                  mat.envMapIntensity = 1.2;
+                  mat.envMapIntensity = 0.78;
+                }
+                if (mat.transparent) {
+                  mat.polygonOffset = true;
+                  mat.polygonOffsetFactor = -1;
+                  mat.polygonOffsetUnits = -1;
                 }
                 mat.needsUpdate = true;
                 return mat.clone();
@@ -524,10 +554,12 @@ export class F1CarShowcase {
       });
 
       if (mode === 'pbr') {
+        mesh.visible = true;
         mesh.material = Array.isArray(origMat)
           ? origMat.map((m) => m.clone())
           : origMat.clone();
       } else if (mode === 'wireframe') {
+        mesh.visible = !mesh.userData?.isTransparentDecal;
         const darkCore = new THREE.MeshStandardMaterial({
           color: 0x0b1224,
           roughness: 0.7,
@@ -548,6 +580,7 @@ export class F1CarShowcase {
         mesh.add(wireMesh);
         this.wireframeOverlays.push(wireMesh);
       } else if (mode === 'clay') {
+        mesh.visible = !mesh.userData?.isTransparentDecal;
         const refMat = Array.isArray(origMat) ? origMat[0] : origMat;
         const clayMat = new THREE.MeshStandardMaterial({
           color: 0xd8dfec,
@@ -564,23 +597,23 @@ export class F1CarShowcase {
   toggleLightingMood() {
     this.nightLighting = !this.nightLighting;
     if (this.nightLighting) {
-      this.hemiLight.intensity = 0.65;
-      this.ambientLight.intensity = 0.28;
+      this.hemiLight.intensity = 0.55;
+      this.ambientLight.intensity = 0.24;
       this.keyLight.intensity = 1.35;
       this.keyLight.color.setHex(0xc7dcff);
       this.rimLight.intensity = 2.9;
       this.rimLight.color.setHex(0x60a5fa);
       this.accentLight.intensity = 2.1;
-      this.renderer.toneMappingExposure = 1.14;
+      this.renderer.toneMappingExposure = 1.1;
     } else {
-      this.hemiLight.intensity = 1.65;
-      this.ambientLight.intensity = 0.72;
-      this.keyLight.intensity = 2.45;
+      this.hemiLight.intensity = 1.25;
+      this.ambientLight.intensity = 0.48;
+      this.keyLight.intensity = 2.35;
       this.keyLight.color.setHex(0xfffaf2);
       this.rimLight.intensity = 1.6;
       this.rimLight.color.setHex(0x93c5fd);
       this.accentLight.intensity = 0.85;
-      this.renderer.toneMappingExposure = 1.22;
+      this.renderer.toneMappingExposure = 1.15;
     }
     return this.nightLighting;
   }
@@ -741,7 +774,12 @@ export class F1CarShowcase {
       this.controls.dispose();
     }
     if (this.scene) {
+      this.scene.environment = null;
       this._disposeObject3D(this.scene);
+    }
+    if (this._envRenderTarget) {
+      this._envRenderTarget.dispose();
+      this._envRenderTarget = null;
     }
     if (this.renderer) {
       this.renderer.dispose();

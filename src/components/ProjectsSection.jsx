@@ -30,10 +30,11 @@ function renderFeaturedDescription(project) {
       <p className="project-description">
         Banco de homologación interactivo en Three.js del monoplaza{' '}
         <strong>Oracle Red Bull Racing RB22</strong> (normativa <strong>FIA 2026</strong>) en
-        formato <strong>GLB</strong> binario con 27 grupos de malla PBR, plataforma de metrología a
-        escala real (<code>5400 × 1900 mm</code>), simulación de flujo aerodinámico de túnel de
-        viento (<code>Modo Z</code> / <code>Modo X</code>), seis estaciones calibradas de cámara y
-        modos de inspección técnica en tiempo real.
+        formato <strong>GLB 4K</strong> binario con 26 mallas PBR y pintura{' '}
+        <code>Clearcoat</code>, plataforma de metrología a escala real (<code>5400 × 1900 mm</code>
+        ), simulación de flujo aerodinámico de túnel de viento (<code>Modo Z</code> /{' '}
+        <code>Modo X</code>), seis estaciones calibradas de cámara y modos de inspección técnica en
+        tiempo real.
       </p>
     );
   }

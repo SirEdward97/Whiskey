@@ -100,7 +100,7 @@ El estilo de interfaz combina la guía de [`tip.md`](./tip.md) (tipografía, col
 ├── public/
 │   ├── dev/                             # 10 logos 3D (.glb) del stack tecnológico en órbita
 │   ├── f1/
-│   │   └── rb22.glb                     # Modelo 3D binario Oracle Red Bull Racing RB22
+│   │   └── 2026_redbull_rb22.glb        # Modelo 3D binario 4K Oracle Red Bull Racing RB22
 │   ├── galaxy/
 │   │   └── stars.glb                    # Galaxia 3D Vía Láctea (160,000 estrellas en GLB)
 │   ├── logo/

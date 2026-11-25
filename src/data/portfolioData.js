@@ -75,22 +75,22 @@ export const PORTFOLIO_DATA = {
       category: 'WebGL / Three.js / Metrología FIA 2026',
       title: 'Oracle Red Bull Racing RB22 — Banco de Homologación 3D',
       description:
-        'Visor interactivo en Three.js del monoplaza Oracle Red Bull Racing RB22 (normativa FIA 2026) en formato GLB binario con 27 grupos de malla PBR, plataforma de metrología a escala real (5400 × 1900 mm), simulación de flujo aerodinámico de túnel de viento en Modo Z y Modo X, seis estaciones de cámara calibradas y modos de inspección técnica en tiempo real.',
+        'Visor interactivo en Three.js del monoplaza Oracle Red Bull Racing RB22 (normativa FIA 2026) en formato GLB binario 4K con 26 mallas PBR y recubrimiento Clearcoat, plataforma de metrología a escala real (5400 × 1900 mm), simulación de flujo aerodinámico de túnel de viento en Modo Z y Modo X, seis estaciones de cámara calibradas y modos de inspección técnica en tiempo real.',
       tags: [
         'Next.js',
         'React',
         'Three.js',
         'WebGL 2.0',
-        'GLB / PBR',
+        'GLB 4K / PBR',
         'Túnel de Viento 3D',
         'OrbitControls',
       ],
       featured: true,
       viewerType: 'f1-rb22',
       model3d: {
-        modelUrl: '/f1/rb22.glb',
-        initialVertices: 222638,
-        initialTriangles: 281075,
+        modelUrl: '/f1/2026_redbull_rb22.glb',
+        initialVertices: 219938,
+        initialTriangles: 280939,
       },
     },
     {

@@ -32,8 +32,8 @@ export default function F1CarViewer({ model3d }) {
   const [loadLabel, setLoadLabel] = useState('0%');
   const [loaderHidden, setLoaderHidden] = useState(false);
   const [telemetry, setTelemetry] = useState({
-    vertices: model3d?.initialVertices || 222638,
-    triangles: model3d?.initialTriangles || 281075,
+    vertices: model3d?.initialVertices || 219938,
+    triangles: model3d?.initialTriangles || 280939,
     fps: 60,
   });
 
@@ -42,9 +42,9 @@ export default function F1CarViewer({ model3d }) {
     if (!canvas) return undefined;
 
     const showcase = new F1CarShowcase(canvas, {
-      modelUrl: model3d?.modelUrl || '/f1/rb22.glb',
-      initialVertices: model3d?.initialVertices || 222638,
-      initialTriangles: model3d?.initialTriangles || 281075,
+      modelUrl: model3d?.modelUrl || '/f1/2026_redbull_rb22.glb',
+      initialVertices: model3d?.initialVertices || 219938,
+      initialTriangles: model3d?.initialTriangles || 280939,
       onLoadProgress: (pct, label) => {
         setLoadProgress(pct);
         if (label) setLoadLabel(label);
